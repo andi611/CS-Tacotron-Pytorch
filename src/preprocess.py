@@ -48,7 +48,7 @@ def get_config():
 	input_path.add_argument('--text_input_train_path', type=str, default='train_ori.txt', help='path to the original training text data')
 	input_path.add_argument('--text_input_dev_path', type=str, default='dev_ori.txt', help='path to the original development text data')
 	input_path.add_argument('--text_input_test_path', type=str, default='test_ori.txt', help='path to the original testing text data')
-	input_path.add_argument('--train_all_meta_path', type=str, default='../data/text/train_all_meta.txt', help='path to the model ready training text transcripts')
+	input_path.add_argument('--train_all_meta_path', type=str, default='../data/text/train_all_pinyin.txt', help='path to the model ready training text transcripts')
 	
 	output_path = parser.add_argument_group('text_output_path')
 	output_path.add_argument('--text_output_train_path', type=str, default='train.txt', help='path to the processed training text data')
