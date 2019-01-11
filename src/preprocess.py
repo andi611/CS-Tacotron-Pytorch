@@ -33,7 +33,6 @@ def get_config():
 	parser.add_argument('--num_workers', type=int, default=cpu_count(), help='multi-thread processing')
 
 	meta_path = parser.add_argument_group('meta_path')
-	meta_path.add_argument('--meta_text_path', type=str, default='../data/meta/meta_text.csv', help='path to the model ready training text transcripts')
 	meta_path.add_argument('--meta_audio_dir', type=str, default='../data/meta/', help='path to the model ready training acoustic features')
 	
 	audio_path = parser.add_argument_group('audio_path')
@@ -49,6 +48,7 @@ def get_config():
 	input_path.add_argument('--text_input_train_path', type=str, default='train_ori.txt', help='path to the original training text data')
 	input_path.add_argument('--text_input_dev_path', type=str, default='dev_ori.txt', help='path to the original development text data')
 	input_path.add_argument('--text_input_test_path', type=str, default='test_ori.txt', help='path to the original testing text data')
+	input_path.add_argument('--train_all_meta_path', type=str, default='../data/text/train_all_meta.txt', help='path to the model ready training text transcripts')
 	
 	output_path = parser.add_argument_group('text_output_path')
 	output_path.add_argument('--text_output_train_path', type=str, default='train.txt', help='path to the processed training text data')
@@ -163,8 +163,8 @@ def make_meta_text(meta_path, text_dir, all_text_output_path, text_input_file_li
 ###################
 # MAKE META AUDIO #
 ###################
-def make_meta_audio(meta_text_path, input_wav_dir, meta_audio_dir, num_workers, frame_shift_ms):
-	metadata = utils.build_from_path(meta_text_path, input_wav_dir, meta_audio_dir, num_workers, tqdm=tqdm)
+def make_meta_audio(train_all_meta_path, input_wav_dir, meta_audio_dir, num_workers, frame_shift_ms):
+	metadata = utils.build_from_path(train_all_meta_path, input_wav_dir, meta_audio_dir, num_workers, tqdm=tqdm)
 	utils.write_metadata(metadata, meta_audio_dir, frame_shift_ms)
 
 
@@ -242,8 +242,8 @@ def main():
 	#---preprocess text and data to be model ready---#
 	elif args.mode == 'all' or args.mode == 'model_ready':
 		os.makedirs(args.meta_audio_dir, exist_ok=True)
-		make_meta_text(args.meta_text_path, args.text_dir, args.all_text_output_path, [args.text_output_train_path, args.text_output_dev_path, args.text_output_test_path])		
-		make_meta_audio(args.meta_text_path, args.audio_output_dir, args.meta_audio_dir, args.num_workers, hparams.frame_shift_ms)
+		make_meta_text(args.train_all_meta_path, args.text_dir, args.all_text_output_path, [args.text_output_train_path, args.text_output_dev_path, args.text_output_test_path])		
+		make_meta_audio(args.train_all_meta_path, args.audio_output_dir, args.meta_audio_dir, args.num_workers, hparams.frame_shift_ms)
 
 	#---dataset analysis---#
 	elif args.mode == 'all' or args.mode == 'analysis':
