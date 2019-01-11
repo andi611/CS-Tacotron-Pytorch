@@ -10,6 +10,7 @@
 ###############
 # IMPORTATION #
 ###############
+from utils import audio
 import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.use('Agg')
@@ -33,3 +34,16 @@ def plot_alignment(alignment, path, info=None):
 	plt.ylabel('Encoder timestep')
 	plt.tight_layout()
 	plt.savefig(path, format='png')
+
+
+####################
+# PLOT SPECTROGRAM #
+####################
+def plot_spectrogram(path, linear_output):
+	spectrogram = audio._denormalize(linear_output)
+	plt.figure(figsize=(16, 10))
+	plt.imshow(spectrogram.T, aspect="auto", origin="lower")
+	plt.colorbar()
+	plt.tight_layout()
+	plt.savefig(path, format="png")
+	plt.close()	

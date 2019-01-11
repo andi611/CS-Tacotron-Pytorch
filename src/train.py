@@ -158,13 +158,7 @@ def save_alignment(path, attn):
 
 
 def save_spectrogram(path, linear_output):
-	spectrogram = audio._denormalize(linear_output)
-	plt.figure(figsize=(16, 10))
-	plt.imshow(spectrogram.T, aspect="auto", origin="lower")
-	plt.colorbar()
-	plt.tight_layout()
-	plt.savefig(path, format="png")
-	plt.close()
+	plot_spectrogram(path, linear_output)
 
 
 def _learning_rate_decay(init_lr, global_step):
