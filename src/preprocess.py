@@ -232,7 +232,7 @@ def main():
 					  start_from=50000, 
 					  multi_plot=True, 
 					  vis_origin=False)
-		check(args.audio_input_dir, args.audio_output_dir, file_suffix='*.wav')
+		utils.check(args.audio_input_dir, args.audio_output_dir, file_suffix='*.wav')
 
 	#---preprocess text and data to be model ready---#
 	elif args.mode == 'all' or args.mode == 'model_ready':
