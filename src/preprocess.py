@@ -20,6 +20,7 @@ from tqdm import tqdm
 from utils import utils
 from hparams import hparams
 from pypinyin import Style, pinyin
+from multiprocessing import cpu_count
 
 
 ##################
