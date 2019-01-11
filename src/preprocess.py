@@ -27,7 +27,7 @@ from pypinyin import Style, pinyin
 def get_config():
 	parser = argparse.ArgumentParser(description='preprocess')
 
-	parser.add_argument('--mode', choices=['text', 'audio', 'analysis', 'all'], default='all', help='what to preprocess')
+	parser.add_argument('--mode', choices=['text', 'audio', 'model_ready', 'analysis', 'all'], default='all', help='what to preprocess')
 
 	audio_path = parser.add_argument_group('audio_path')
 	audio_path.add_argument('--audio_input_dir', type=str, default='../data/audio/original/', help='directory path to the original audio data')
@@ -77,32 +77,6 @@ def process_text(mapper, input_path, output_path):
 			w.write(write.strip() + '\n')
 
 
-#############
-# MAKE META #
-#############
-def make_meta(meta_path, text_dir, all_text_output_path, text_input_file_list):
-	
-	all_text = []
-	with open(os.path.join(text_dir, all_text_output_path), 'w', encoding='utf-8') as w:
-		for input_path in text_input_file_list:
-			input_path = os.path.join(text_dir, input_path)
-			with open(input_path, 'r', encoding='utf-8') as r:
-				lines = r.readlines()
-				for line in lines: 
-					w.write(line)
-
-	def _ch2pinyin(txt_ch):
-		ans = pinyin(txt_ch, style=Style.TONE2, errors=lambda x: x, strict=False)
-		return [x[0] for x in ans if x[0] != 'EMPH_A']
-	
-	with open(os.path.join(text_dir, meta_path), 'w') as w:
-		with open(os.path.join(text_dir, all_text_output_path), 'r') as r:
-			lines = r.readlines()
-			for line in lines:
-				tokens = line[:-1].split(' ')
-				wid, txt_ch = tokens[0], ' '.join(_ch2pinyin(tokens[1:]))
-				w.write(wid + '|' + txt_ch + '|' + txt_ch + '\n')
-
 #################
 # PROCESS AUDIO #
 #################
@@ -151,6 +125,42 @@ def process_audio(input_dir, output_dir, visualization_dir, file_suffix='*.wav',
 				utils.visualization(name, y, yt, sr, output_dir, visualization_dir, multi_plot)
 
 		print('Progress: %i/%i: Complete!' % (len(wavs), len(wavs)))
+
+
+##################
+# MAKE META TEXT #
+##################
+def make_meta_text(meta_path, text_dir, all_text_output_path, text_input_file_list):
+	
+	all_text = []
+	with open(os.path.join(text_dir, all_text_output_path), 'w', encoding='utf-8') as w:
+		for input_path in text_input_file_list:
+			input_path = os.path.join(text_dir, input_path)
+			with open(input_path, 'r', encoding='utf-8') as r:
+				lines = r.readlines()
+				for line in lines: 
+					w.write(line)
+
+	def _ch2pinyin(txt_ch):
+		ans = pinyin(txt_ch, style=Style.TONE2, errors=lambda x: x, strict=False)
+		return [x[0] for x in ans if x[0] != 'EMPH_A']
+	
+	with open(os.path.join(text_dir, meta_path), 'w') as w:
+		with open(os.path.join(text_dir, all_text_output_path), 'r') as r:
+			lines = r.readlines()
+			for line in lines:
+				tokens = line[:-1].split(' ')
+				wid, txt_ch = tokens[0], ' '.join(_ch2pinyin(tokens[1:]))
+				w.write(wid + '|' + txt_ch + '|' + txt_ch + '\n')
+
+
+###################
+# MAKE META AUDIO #
+###################
+def make_meta_audio(meta_path, text_dir, all_text_output_path, text_input_file_list):
+	os.makedirs(out_dir, exist_ok=True)
+	metadata = build_from_path(meta_path, wav_dir, out_dir, args.num_workers, tqdm=tqdm)
+	write_metadata(metadata, out_dir)
 
 
 ####################
@@ -206,25 +216,33 @@ def main():
 
 	args = get_config()
 	
+	#---preprocess text---#
 	if args.mode == 'all' or args.mode == 'text':
 		mapper = utils.get_mapper(os.path.join(args.text_dir, args.mapper_path))
 		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_train_path), output_path=os.path.join(args.text_dir, args.text_output_train_path))
 		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_dev_path), output_path=os.path.join(args.text_dir, args.text_output_dev_path))
 		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_test_path), output_path=os.path.join(args.text_dir, args.text_output_test_path))
-		make_meta(args.meta_path, args.text_dir, args.all_text_output_path, [args.text_output_train_path, args.text_output_dev_path, args.text_output_test_path])		
 
+	#---preprocess audio---#
 	elif args.mode == 'all' or args.mode == 'audio':
 		process_audio(args.audio_input_dir, 
 					  args.audio_output_dir, 
 					  args.visualization_dir, 
 					  file_suffix='*.wav', 
-					  start_from=28520, 
+					  start_from=50000, 
 					  multi_plot=True, 
 					  vis_origin=False)
 		check(args.audio_input_dir, args.audio_output_dir, file_suffix='*.wav')
 
+	#---preprocess text and data to be model ready---#
+	elif args.mode == 'all' or args.mode == 'model_ready':
+		make_meta_text(args.meta_path, args.text_dir, args.all_text_output_path, [args.text_output_train_path, args.text_output_dev_path, args.text_output_test_path])		
+		make_meta_audio()
+
+	#---dataset analysis---#
 	elif args.mode == 'all' or args.mode == 'analysis':
 		dataset_analysis(args.audio_input_dir, args.text_dir, [args.text_output_train_path, args.text_output_dev_path, args.text_output_test_path])
+	
 	else:
 		raise RuntimeError('Invalid mode!')
 
