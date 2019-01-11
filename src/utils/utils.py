@@ -145,7 +145,7 @@ def check(input_dir, output_dir, file_suffix='*.wav'):
 		print('Audio pre-processing complete!')
 
 
-def write_metadata(metadata, out_dir, frame_shift_ms):
+def write_meta_data(metadata, out_dir, frame_shift_ms):
 	with open(os.path.join(out_dir, 'meta_text.txt'), 'w', encoding='utf-8') as f:
 		for m in metadata:
 			f.write('|'.join([str(x) for x in m]) + '\n')
@@ -156,7 +156,7 @@ def write_metadata(metadata, out_dir, frame_shift_ms):
 		print('Max output length: %d' % max(m[2] for m in metadata))
 
 
-def build_from_path(meta_path, wav_dir, out_dir, num_workers=1, tqdm=lambda x: x):
+def build_from_path(transcript_path, wav_dir, out_dir, num_workers=1, tqdm=lambda x: x):
 	'''Preprocesses the LJ Speech dataset from a given input path into a given output directory.
 
 	Args:
@@ -174,11 +174,11 @@ def build_from_path(meta_path, wav_dir, out_dir, num_workers=1, tqdm=lambda x: x
 	executor = ProcessPoolExecutor(max_workers=num_workers)
 	futures = []
 	index = 1
-	with open(meta_path, encoding='utf-8') as f:
+	with open(transcript_path, encoding='utf-8') as f:
 		for line in f:
-			parts = line.strip().split('|')
-			wav_path = os.path.join(wav_dir, '%s.wav' % parts[0])
-			text = parts[2]
+			tokens = line.strip().split('|')
+			wav_path = os.path.join(wav_dir, '%s.wav' % tokens[0])
+			text = tokens[1]
 			futures.append(executor.submit(partial(_process_utterance, out_dir, index, wav_path, text)))
 			index += 1
 	return [future.result() for future in tqdm(futures)]

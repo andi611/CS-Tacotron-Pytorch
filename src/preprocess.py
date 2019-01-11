@@ -134,9 +134,9 @@ def process_audio(input_dir, output_dir, visualization_dir, file_suffix='*.wav',
 
 
 ##################
-# MAKE META TEXT #
+# PROCESS PINYIN #
 ##################
-def make_meta_text(meta_path, text_dir, all_text_output_path, text_input_file_list):
+def process_pinyin(meta_path, text_dir, all_text_output_path, text_input_file_list):
 	
 	all_text = []
 	with open(os.path.join(text_dir, all_text_output_path), 'w', encoding='utf-8') as w:
@@ -157,15 +157,16 @@ def make_meta_text(meta_path, text_dir, all_text_output_path, text_input_file_li
 			for line in lines:
 				tokens = line[:-1].split(' ')
 				wid, txt_ch = tokens[0], ' '.join(_ch2pinyin(tokens[1:]))
-				w.write(wid + '|' + txt_ch + '|' + txt_ch + '\n')
+				w.write(wid + '|' + txt_ch + '\n')
 
 
-###################
-# MAKE META AUDIO #
-###################
-def make_meta_audio(train_all_meta_path, input_wav_dir, meta_audio_dir, num_workers, frame_shift_ms):
+#############
+# MAKE META #
+#############
+def make_meta(train_all_meta_path, input_wav_dir, meta_audio_dir, num_workers, frame_shift_ms):
+	os.makedirs(meta_audio_dir, exist_ok=True)
 	metadata = utils.build_from_path(train_all_meta_path, input_wav_dir, meta_audio_dir, num_workers, tqdm=tqdm)
-	utils.write_metadata(metadata, meta_audio_dir, frame_shift_ms)
+	utils.write_meta_data(metadata, meta_audio_dir, frame_shift_ms)
 
 
 ####################
@@ -227,6 +228,7 @@ def main():
 		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_train_path), output_path=os.path.join(args.text_dir, args.text_output_train_path))
 		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_dev_path), output_path=os.path.join(args.text_dir, args.text_output_dev_path))
 		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_test_path), output_path=os.path.join(args.text_dir, args.text_output_test_path))
+		process_pinyin(args.train_all_meta_path, args.text_dir, args.all_text_output_path, [args.text_output_train_path, args.text_output_dev_path, args.text_output_test_path])		
 
 	#---preprocess audio---#
 	elif args.mode == 'all' or args.mode == 'audio':
@@ -234,16 +236,14 @@ def main():
 					  args.audio_output_dir, 
 					  args.visualization_dir, 
 					  file_suffix='*.wav', 
-					  start_from=50000, 
+					  start_from=0, 
 					  multi_plot=True, 
 					  vis_origin=False)
 		utils.check(args.audio_input_dir, args.audio_output_dir, file_suffix='*.wav')
 
 	#---preprocess text and data to be model ready---#
 	elif args.mode == 'all' or args.mode == 'model_ready':
-		os.makedirs(args.meta_audio_dir, exist_ok=True)
-		make_meta_text(args.train_all_meta_path, args.text_dir, args.all_text_output_path, [args.text_output_train_path, args.text_output_dev_path, args.text_output_test_path])		
-		make_meta_audio(args.train_all_meta_path, args.audio_output_dir, args.meta_audio_dir, args.num_workers, hparams.frame_shift_ms)
+		make_meta(args.train_all_meta_path, args.audio_output_dir, args.meta_audio_dir, args.num_workers, hparams.frame_shift_ms)
 
 	#---dataset analysis---#
 	elif args.mode == 'all' or args.mode == 'analysis':
