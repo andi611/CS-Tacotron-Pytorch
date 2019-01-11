@@ -28,11 +28,11 @@ def get_config():
 	parser.add_argument('--mode', choices=['text', 'audio', 'all'], default='all', help='what to preprocess')
 
 	path = parser.add_argument_group('path')
-	path.add_argument('--mapper_path', type=str, default='./mapper.txt', help='path to the encoding mapper')
-	path.add_argument('--text_dir', type=str, default='./text', help='directory to the text transcripts')
-	path.add_argument('--audio_input_dir', type=str, default='./audio/original/', help='directory path to the original audio data')
-	path.add_argument('--audio_output_dir', type=str, default='./audio/processed/', help='directory path to output the processed audio data')
-	path.add_argument('--visualization_dir', type=str, default='./audio/visualization/', help='directory path to output the audio visualization images')
+	path.add_argument('--mapper_path', type=str, default='../data/mapper.txt', help='path to the encoding mapper')
+	path.add_argument('--audio_input_dir', type=str, default='../data/audio/original/', help='directory path to the original audio data')
+	path.add_argument('--audio_output_dir', type=str, default='../data/audio/processed/', help='directory path to output the processed audio data')
+	path.add_argument('--visualization_dir', type=str, default='../data/audio/visualization/', help='directory path to output the audio visualization images')
+	path.add_argument('--text_dir', type=str, default='../data/text', help='directory to the text transcripts')
 
 	input_path = parser.add_argument_group('text_input_path')
 	input_path.add_argument('--text_input_train_path', type=str, default='./train_ori.txt', help='path to the original training text data')
@@ -183,7 +183,7 @@ def main():
 					  args.audio_output_dir, 
 					  args.visualization_dir, 
 					  prefix='*.wav', 
-					  start_from=0, 
+					  start_from=28520, 
 					  multi_plot=True, 
 					  vis_origin=False)
 	
