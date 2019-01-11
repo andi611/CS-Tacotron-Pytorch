@@ -1,11 +1,29 @@
-import librosa
-import librosa.filters
+# -*- coding: utf-8 -*- #
+"""*********************************************************************************************"""
+#   FileName     [ audio.py ]
+#   Synopsis     [ audio utility functions ]
+#   Author       [ Ting-Wei Liu (Andi611) ]
+#   Copyright    [ Copyleft(c), Speech Lab, NTU, Taiwan ]
+"""*********************************************************************************************"""
+
+
+###############
+# IMPORTATION #
+###############
 import math
 import numpy as np
+import librosa
+import librosa.filters
 import tensorflow as tf
 from scipy import signal
 from hparams import hparams
 from scipy.io import wavfile
+
+
+#############
+# FUNCTIONS #
+#############
+
 
 def load_wav(path):
 	return librosa.core.load(path, sr=hparams.sample_rate)[0]
@@ -31,17 +49,20 @@ def spectrogram(y):
 
 
 def inv_spectrogram(spectrogram):
-	'''Converts spectrogram to waveform using librosa'''
+	"""
+		Converts spectrogram to waveform using librosa
+	"""
 	S = _db_to_amp(_denormalize(spectrogram) + hparams.ref_level_db)  # Convert back to linear
 	return inv_preemphasis(_griffin_lim(S ** hparams.power))          # Reconstruct phase
 
 
 def inv_spectrogram_tensorflow(spectrogram):
-	'''Builds computational graph to convert spectrogram to waveform using TensorFlow.
+	"""
+		Builds computational graph to convert spectrogram to waveform using TensorFlow.
 
-	Unlike inv_spectrogram, this does NOT invert the preemphasis. The caller should call
-	inv_preemphasis on the output after running the graph.
-	'''
+		Unlike inv_spectrogram, this does NOT invert the preemphasis. The caller should call
+		inv_preemphasis on the output after running the graph.
+	"""
 	S = _db_to_amp_tensorflow(_denormalize_tensorflow(spectrogram) + hparams.ref_level_db)
 	return _griffin_lim_tensorflow(tf.pow(S, hparams.power))
 
@@ -63,9 +84,10 @@ def find_endpoint(wav, threshold_db=-40, min_silence_sec=0.8):
 
 
 def _griffin_lim(S):
-	'''librosa implementation of Griffin-Lim
-	Based on https://github.com/librosa/librosa/issues/434
-	'''
+	"""
+		librosa implementation of Griffin-Lim
+		Based on https://github.com/librosa/librosa/issues/434
+	"""
 	angles = np.exp(2j * np.pi * np.random.rand(*S.shape))
 	S_complex = np.abs(S).astype(np.complex)
 	y = _istft(S_complex * angles)
@@ -76,9 +98,10 @@ def _griffin_lim(S):
 
 
 def _griffin_lim_tensorflow(S):
-	'''TensorFlow implementation of Griffin-Lim
-	Based on https://github.com/Kyubyong/tensorflow-exercises/blob/master/Audio_Processing.ipynb
-	'''
+	"""
+		TensorFlow implementation of Griffin-Lim
+		Based on https://github.com/Kyubyong/tensorflow-exercises/blob/master/Audio_Processing.ipynb
+	"""
 	with tf.variable_scope('griffinlim'):
 		# TensorFlow's stft and istft operate on a batch of spectrograms; create batch of size 1
 		S = tf.expand_dims(S, 0)
@@ -118,7 +141,10 @@ def _stft_parameters():
 	return n_fft, hop_length, win_length
 
 
-# Conversions:
+########################
+# CONVERSION FUNCTIONS #
+########################
+
 
 _mel_basis = None
 
