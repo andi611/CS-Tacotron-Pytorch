@@ -177,6 +177,7 @@ def main():
 		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_train_path), output_path=os.path.join(args.text_dir, args.text_output_train_path))
 		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_dev_path), output_path=os.path.join(args.text_dir, args.text_output_dev_path))
 		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_test_path), output_path=os.path.join(args.text_dir, args.text_output_test_path))
+		dataset_analysis(args.audio_input_dir, args.text_dir, [args.text_output_train_path, args.text_output_dev_path, args.text_output_test_path])
 
 	elif args.mode == 'all' or args.mode == 'audio':
 		process_audio(args.audio_input_dir, 
@@ -189,8 +190,7 @@ def main():
 	
 	else:
 		raise RuntimeError('Invalid mode!')
-	
-	dataset_analysis(args.audio_input_dir, args.text_dir, [args.text_output_train_path, args.text_output_dev_path, args.text_output_test_path])
+
 
 
 if __name__ == '__main__':
