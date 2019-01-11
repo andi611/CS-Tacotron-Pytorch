@@ -85,7 +85,9 @@ def process_audio(input_dir, output_dir, visualization_dir, prefix='*.wav', star
 		raise ValueError('Please make sure there are .wav files in the directory: ', input_dir)
 	if os.path.isdir(output_dir) or os.path.isdir(visualization_dir):
 		print('Output directories already exist, please remove these existing directories to proceed.')
-		return
+		proceed = str(input('Proceed? [y/n]'))
+		if proceed == 'Y': pass
+		else: return
 	if not os.path.isdir(output_dir):
 		os.makedirs(output_dir)
 	if not os.path.isdir(visualization_dir):
