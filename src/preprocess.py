@@ -1,107 +1,197 @@
-import argparse
+# -*- coding: utf-8 -*- #
+"""*********************************************************************************************"""
+#   FileName     [ preprocess.py ]
+#   Synopsis     [ preprocess text transcripts and audio speech of the LectureDSP dataset for the Tacotron model ]
+#   Author       [ Ting-Wei Liu (Andi611) ]
+#   Copyright    [ Copyleft(c), Speech Lab, NTU, Taiwan ]
+"""*********************************************************************************************"""
+
+
+###############
+# IMPORTATION #
+###############
 import os
-from multiprocessing import cpu_count
+import glob
+import nltk
+import librosa
+import argparse
+from utils import *
 from tqdm import tqdm
-from hparams import hparams
-from concurrent.futures import ProcessPoolExecutor
-from functools import partial
-import numpy as np
-from utils import audio
 
 
-def preprocess(args):
-  meta_path = args.meta_path
-  wav_dir = args.wav_dir
-  out_dir = args.out_dir
-  os.makedirs(out_dir, exist_ok=True)
-  metadata = build_from_path(meta_path, wav_dir, out_dir, args.num_workers, tqdm=tqdm)
-  write_metadata(metadata, out_dir)
+##################
+# CONFIGURATIONS #
+##################
+def get_config():
+	parser = argparse.ArgumentParser(description='preprocess')
+
+	parser.add_argument('--mode', choices=['text', 'audio', 'all'], default='all', help='what to preprocess')
+
+	path = parser.add_argument_group('path')
+	path.add_argument('--mapper_path', type=str, default='./mapper.txt', help='path to the encoding mapper')
+	path.add_argument('--text_dir', type=str, default='./text', help='directory to the text transcripts')
+	path.add_argument('--audio_input_dir', type=str, default='./audio/original/', help='directory path to the original audio data')
+	path.add_argument('--audio_output_dir', type=str, default='./audio/processed/', help='directory path to output the processed audio data')
+	path.add_argument('--visualization_dir', type=str, default='./audio/visualization/', help='directory path to output the audio visualization images')
+
+	input_path = parser.add_argument_group('text_input_path')
+	input_path.add_argument('--text_input_train_path', type=str, default='./train_ori.txt', help='path to the original training text data')
+	input_path.add_argument('--text_input_dev_path', type=str, default='./dev_ori.txt', help='path to the original development text data')
+	input_path.add_argument('--text_input_test_path', type=str, default='./test_ori.txt', help='path to the original testing text data')
+	
+	output_path = parser.add_argument_group('text_output_path')
+	output_path.add_argument('--text_output_train_path', type=str, default='./train.txt', help='path to the processed training text data')
+	output_path.add_argument('--text_output_dev_path', type=str, default='./dev.txt', help='path to the processed development text data')
+	output_path.add_argument('--text_output_test_path', type=str, default='./test.txt', help='path to the processed testing text data')
+
+	args = parser.parse_args()
+	return args
 
 
-def write_metadata(metadata, out_dir):
-  with open(os.path.join(out_dir, 'train.txt'), 'w', encoding='utf-8') as f:
-    for m in metadata:
-      f.write('|'.join([str(x) for x in m]) + '\n')
-  frames = sum([m[2] for m in metadata])
-  hours = frames * hparams.frame_shift_ms / (3600 * 1000)
-  print('Wrote %d utterances, %d frames (%.2f hours)' % (len(metadata), frames, hours))
-  print('Max input length:  %d' % max(len(m[3]) for m in metadata))
-  print('Max output length: %d' % max(m[2] for m in metadata))
+################
+# PROCESS TEXT #
+################
+def process_text(mapper, input_path, output_path):
+	input_file = []
+	with open(input_path, 'r', encoding='utf-8') as r:
+		lines = r.readlines()
+		input_file = [ line.split() for line in lines ]
+
+	with open(output_path, 'w', encoding='utf-8') as w:
+		for line in input_file:
+			w.write(line[0] + ' ')
+			write = ''
+			for word in line[1:]:
+				for char in word.split(']['):
+					try:	
+						write += mapper[char.strip('[').strip(']')]
+					except:
+						write += word
+				write += ' '
+			w.write(write.strip() + '\n')
 
 
-def build_from_path(meta_path, wav_dir, out_dir, num_workers=1, tqdm=lambda x: x):
-  '''Preprocesses the LJ Speech dataset from a given input path into a given output directory.
+#################
+# PROCESS AUDIO #
+#################
+"""
+	Trim out the noisy parts in the audios,
+	add begining and ending silence, and finally realign them.
+	Reprocess .wav files into clean and aligned .wav audios files.
+"""
+def process_audio(input_dir, output_dir, visualization_dir, prefix='*.wav', start_from=0, multi_plot=False, vis_origin=False):
 
-    Args:
-      in_dir: The directory where you have downloaded the LJ Speech dataset
-      out_dir: The directory to write the output into
-      num_workers: Optional number of worker processes to parallelize across
-      tqdm: You can optionally pass tqdm to get a nice progress bar
+	if not os.path.isdir(input_dir):
+		raise ValueError('Please make sure there are .wav files in the directory: ', input_dir)
+	if os.path.isdir(output_dir) or os.path.isdir(visualization_dir):
+		print('Output directories already exist, please remove these existing directories to proceed.')
+		return
+	if not os.path.isdir(output_dir):
+		os.makedirs(output_dir)
+	if not os.path.isdir(visualization_dir):
+		os.makedirs(visualization_dir)	
 
-    Returns:
-      A list of tuples describing the training examples. This should be written to train.txt
-  '''
+	wavs = sorted(glob.glob(os.path.join(input_dir, prefix)))
+	
+	if vis_origin:
+		for wav in wavs:
+			y, sr = librosa.load(wav)
+			visualization(wav.split('/')[-1].split('.')[0], y, None, sr, output_dir, visualization_dir, multi_plot=False)
+	
+	else:
+		for i, wav in enumerate(tqdm(wavs)):
+			if i + 1 >= start_from:
+				
+				y, sr = librosa.load(wav)
+				yt = highpass_filter(y, sr)
 
-  # We use ProcessPoolExecutor to parallize across processes. This is just an optimization and you
-  # can omit it and just call _process_utterance on each input if you want.
-  executor = ProcessPoolExecutor(max_workers=num_workers)
-  futures = []
-  index = 1
-  with open(meta_path, encoding='utf-8') as f:
-    for line in f:
-      parts = line.strip().split('|')
-      wav_path = os.path.join(wav_dir, '%s.wav' % parts[0])
-      text = parts[2]
-      futures.append(executor.submit(partial(_process_utterance, out_dir, index, wav_path, text)))
-      index += 1
-  return [future.result() for future in tqdm(futures)]
+				name = wav.split('/')[-1].split('.')[0]
+				new_wav = output_dir + name + '.wav'
+				librosa.output.write_wav(path=new_wav, y=yt.astype(np.float32), sr=sr)
 
+				sound = match_target_amplitude(new_wav, prefix='wav', target_dBFS=-10.0)
+				sound.export(new_wav, format="wav")
 
-def _process_utterance(out_dir, index, wav_path, text):
-  '''Preprocesses a single utterance audio/text pair.
+				yt, sr = librosa.load(new_wav)
+				visualization(name, y, yt, sr, output_dir, visualization_dir, multi_plot)
 
-  This writes the mel and linear scale spectrograms to disk and returns a tuple to write
-  to the train.txt file.
-
-  Args:
-    out_dir: The directory to write the spectrograms into
-    index: The numeric index to use in the spectrogram filenames.
-    wav_path: Path to the audio file containing the speech input
-    text: The text spoken in the input audio file
-
-  Returns:
-    A (spectrogram_filename, mel_filename, n_frames, text) tuple to write to train.txt
-  '''
-
-  # Load the audio to a numpy array:
-  wav = audio.load_wav(wav_path)
-
-  # Compute the linear-scale spectrogram from the wav:
-  spectrogram = audio.spectrogram(wav).astype(np.float32)
-  n_frames = spectrogram.shape[1]
-
-  # Compute a mel-scale spectrogram from the wav:
-  mel_spectrogram = audio.melspectrogram(wav).astype(np.float32)
-
-  # Write the spectrograms to disk:
-  spectrogram_filename = 'ljspeech-spec-%05d.npy' % index
-  mel_filename = 'ljspeech-mel-%05d.npy' % index
-  np.save(os.path.join(out_dir, spectrogram_filename), spectrogram.T, allow_pickle=False)
-  np.save(os.path.join(out_dir, mel_filename), mel_spectrogram.T, allow_pickle=False)
-
-  # Return a tuple describing this training example:
-  return (spectrogram_filename, mel_filename, n_frames, text)
+		print('Progress: %i/%i: Complete!' % (len(wavs), len(wavs)))
+		check()
 
 
+####################
+# DATASET ANALYSIS #
+####################
+def dataset_analysis(wav_dir, text_dir, text_input_file_list):
+	nltk.download('wordnet')
+	
+	all_text = []
+	all_audio = []
+	for input_path in text_input_file_list:
+		input_path = os.path.join(text_dir, input_path)
+		with open(input_path, 'r', encoding='utf-8') as r:
+			lines = r.readlines()
+			for line in lines: 
+				all_text.append(line.split()[1:])
+				all_audio.append(line.split()[0])
+	print('Training data count: ', len(all_text))
+	
+	line_switch_count = 0
+	total_switch_count = 0
+	
+	for line in all_text:
+		for text in line:
+			if nltk.corpus.wordnet.synsets(text): total_switch_count += 1
+		for text in line:
+			if nltk.corpus.wordnet.synsets(text): 
+				line_switch_count += 1
+				break
+	print('Total number of switches: ', total_switch_count)
+	print('Total number of sentences containing a switch: ', line_switch_count)
+
+	duration = 0.0
+	max_d = 0
+	min_d = 60
+	for audio in tqdm(all_audio):
+		y, sr = librosa.load(os.path.join(wav_dir, audio + '.wav'))
+		d = librosa.get_duration(y=y, sr=sr)
+		if d > max_d: max_d = d
+		if d < min_d: min_d = d
+		duration += d
+	print('Switch frequency - total number of switch / hour: ', total_switch_count / (duration / 60**2))
+	print('Speech total length (hr): ', duration / 60**2)
+	print('Max duration (seconds): ', max_d)
+	print('Min duration (seconds): ', min_d)
+	print('Average duration (seconds): ', duration / len(all_audio))
+
+
+########
+# MAIN #
+########
 def main():
-  parser = argparse.ArgumentParser()
-  parser.add_argument('--meta_path', type=str, required=True)
-  parser.add_argument('--wav_dir', type=str, required=True)
-  parser.add_argument('--out_dir', type=str, default='training')
-  parser.add_argument('--num_workers', type=int, default=cpu_count())
-  args = parser.parse_args()
-  preprocess(args)
+
+	args = get_config()
+	
+	if args.mode == 'all' or args.mode == 'text':
+		mapper = get_mapper(args.mapper_path)
+		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_train_path), output_path=os.path.join(args.text_dir, args.text_output_train_path))
+		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_dev_path), output_path=os.path.join(args.text_dir, args.text_output_dev_path))
+		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_test_path), output_path=os.path.join(args.text_dir, args.text_output_test_path))
+
+	elif args.mode == 'all' or args.mode == 'audio':
+		process_audio(args.audio_input_dir, 
+					  args.audio_output_dir, 
+					  args.visualization_dir, 
+					  prefix='*.wav', 
+					  start_from=0, 
+					  multi_plot=True, 
+					  vis_origin=False)
+	
+	else:
+		raise RuntimeError('Invalid mode!')
+	
+	dataset_analysis(args.audio_input_dir, args.text_dir, [args.text_output_train_path, args.text_output_dev_path, args.text_output_test_path])
 
 
-if __name__ == "__main__":
-  main()
+if __name__ == '__main__':
+	main()
