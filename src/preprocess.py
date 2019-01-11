@@ -164,8 +164,8 @@ def make_meta_text(meta_path, text_dir, all_text_output_path, text_input_file_li
 # MAKE META AUDIO #
 ###################
 def make_meta_audio(meta_text_path, input_wav_dir, meta_audio_dir, num_workers, frame_shift_ms):
-	metadata = build_from_path(meta_text_path, input_wav_dir, meta_audio_dir, num_workers, tqdm=tqdm)
-	write_metadata(metadata, meta_audio_dir, frame_shift_ms)
+	metadata = utils.build_from_path(meta_text_path, input_wav_dir, meta_audio_dir, num_workers, tqdm=tqdm)
+	utils.write_metadata(metadata, meta_audio_dir, frame_shift_ms)
 
 
 ####################
