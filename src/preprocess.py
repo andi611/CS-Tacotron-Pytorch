@@ -32,9 +32,9 @@ def get_config():
 	parser.add_argument('--mode', choices=['text', 'audio', 'model_ready', 'analysis', 'all'], default='all', help='what to preprocess')
 	parser.add_argument('--num_workers', type=int, default=cpu_count(), help='multi-thread processing')
 
-	neta_path = parser.add_argument_group('meta_path')
-	text_path.add_argument('--meta_text_path', type=str, default='../data/meta/meta.csv', help='path to the model ready training text transcripts')
-	text_path.add_argument('--meta_audio_dir', type=str, default='../data/meta/', help='path to the model ready training acoustic features')
+	meta_path = parser.add_argument_group('meta_path')
+	meta_path.add_argument('--meta_text_path', type=str, default='../data/meta/meta.csv', help='path to the model ready training text transcripts')
+	meta_path.add_argument('--meta_audio_dir', type=str, default='../data/meta/', help='path to the model ready training acoustic features')
 	
 	audio_path = parser.add_argument_group('audio_path')
 	audio_path.add_argument('--audio_input_dir', type=str, default='../data/audio/original/', help='directory path to the original audio data')
