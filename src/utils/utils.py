@@ -146,7 +146,7 @@ def check(input_dir, output_dir, file_suffix='*.wav'):
 
 
 def write_metadata(metadata, out_dir, frame_shift_ms):
-	with open(os.path.join(out_dir, 'train.txt'), 'w', encoding='utf-8') as f:
+	with open(os.path.join(out_dir, 'meta_text.txt'), 'w', encoding='utf-8') as f:
 		for m in metadata:
 			f.write('|'.join([str(x) for x in m]) + '\n')
 		frames = sum([m[2] for m in metadata])
@@ -166,7 +166,7 @@ def build_from_path(meta_path, wav_dir, out_dir, num_workers=1, tqdm=lambda x: x
 		tqdm: You can optionally pass tqdm to get a nice progress bar
 
 	Returns:
-		A list of tuples describing the training examples. This should be written to train.txt
+		A list of tuples describing the training examples. This should be written to meta_text.txt
 	'''
 
 	# We use ProcessPoolExecutor to parallize across processes. This is just an optimization and you
@@ -188,7 +188,7 @@ def _process_utterance(out_dir, index, wav_path, text):
 	'''Preprocesses a single utterance audio/text pair.
 
 	This writes the mel and linear scale spectrograms to disk and returns a tuple to write
-	to the train.txt file.
+	to the meta_text.txt file.
 
 	Args:
 	out_dir: The directory to write the spectrograms into
@@ -197,7 +197,7 @@ def _process_utterance(out_dir, index, wav_path, text):
 	text: The text spoken in the input audio file
 
 	Returns:
-	A (spectrogram_filename, mel_filename, n_frames, text) tuple to write to train.txt
+	A (spectrogram_filename, mel_filename, n_frames, text) tuple to write to meta_text.txt
 	'''
 
 	# Load the audio to a numpy array:

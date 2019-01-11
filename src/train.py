@@ -64,10 +64,10 @@ class TextDataSource(FileDataSource):
         pass #self._cleaner_names = [x.strip() for x in hparams.cleaners.split(',')]
 
     def collect_files(self):
-        meta = join(DATA_ROOT, "train.txt")
-        with open(meta, "rb") as f:
+        meta = join(DATA_ROOT, "meta_text.txt")
+        with open(meta, 'r', encoding='utf-8') as f:
             lines = f.readlines()
-        lines = list(map(lambda l: l.decode("utf-8").split("|")[-1][:-1], lines))
+        lines = list(map(lambda l: l.split("|")[-1][:-1], lines))
         return lines
 
     def collect_features(self, text):
@@ -79,10 +79,10 @@ class _NPYDataSource(FileDataSource):
         self.col = col
 
     def collect_files(self):
-        meta = join(DATA_ROOT, "train.txt")
-        with open(meta, "rb") as f:
+        meta = join(DATA_ROOT, "meta_text.txt")
+        with open(meta, 'r', encoding='utf-8') as f:
             lines = f.readlines()
-        lines = list(map(lambda l: l.decode("utf-8").split("|")[self.col], lines))
+        lines = list(map(lambda l: l.split("|")[self.col], lines))
         paths = list(map(lambda f: join(DATA_ROOT, f), lines))
         return paths
 
