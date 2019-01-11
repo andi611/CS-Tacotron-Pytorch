@@ -53,10 +53,9 @@ from tensorboardX import SummaryWriter
 #from tensorboard_logger import log_value
 
 
-#############
-# CONSTANTS #
-#############
-fs = hparams.sample_rate
+####################
+# GLOBAL VARIABLES #
+####################
 global_step = 0
 global_epoch = 0
 use_cuda = torch.cuda.is_available()
@@ -213,7 +212,8 @@ def save_states(global_step, mel_outputs, linear_outputs, attn, y,
 def train(model, data_loader, optimizer,
 		  init_lr=0.002,
 		  checkpoint_dir=None, checkpoint_interval=None, nepochs=None,
-		  clip_thresh=1.0):
+		  clip_thresh=1.0,
+		  sample_rate):
 
 	writer = SummaryWriter()
 	model.train()
@@ -249,7 +249,7 @@ def train(model, data_loader, optimizer,
 
 			# Loss
 			mel_loss = criterion(mel_outputs, mel)
-			n_priority_freq = int(3000 / (fs * 0.5) * linear_dim)
+			n_priority_freq = int(3000 / (sample_rate * 0.5) * linear_dim)
 			linear_loss = 0.5 * criterion(linear_outputs, y) \
 				+ 0.5 * criterion(linear_outputs[:, :, :n_priority_freq],
 								  y[:, :, :n_priority_freq])
@@ -374,7 +374,8 @@ if __name__ == "__main__":
 			  checkpoint_dir=checkpoint_dir,
 			  checkpoint_interval=hparams.checkpoint_interval,
 			  nepochs=hparams.nepochs,
-			  clip_thresh=hparams.clip_thresh)
+			  clip_thresh=hparams.clip_thresh,
+			  sample_rate=hparams.sample_rate)
 	except KeyboardInterrupt:
 		pass
 		#save_checkpoint(
