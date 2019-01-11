@@ -18,6 +18,7 @@ import argparse
 import numpy as np
 from tqdm import tqdm
 from utils import utils
+from hparams import hparams
 from pypinyin import Style, pinyin
 
 
@@ -28,7 +29,12 @@ def get_config():
 	parser = argparse.ArgumentParser(description='preprocess')
 
 	parser.add_argument('--mode', choices=['text', 'audio', 'model_ready', 'analysis', 'all'], default='all', help='what to preprocess')
+	parser.add_argument('--num_workers', type=int, default=cpu_count(), help='multi-thread processing')
 
+	neta_path = parser.add_argument_group('meta_path')
+	text_path.add_argument('--meta_text_path', type=str, default='../data/meta/meta.csv', help='path to the model ready training text transcripts')
+	text_path.add_argument('--meta_audio_dir', type=str, default='../data/meta/', help='path to the model ready training acoustic features')
+	
 	audio_path = parser.add_argument_group('audio_path')
 	audio_path.add_argument('--audio_input_dir', type=str, default='../data/audio/original/', help='directory path to the original audio data')
 	audio_path.add_argument('--audio_output_dir', type=str, default='../data/audio/processed/', help='directory path to output the processed audio data')
@@ -36,7 +42,6 @@ def get_config():
 	
 	text_path = parser.add_argument_group('text_path')
 	text_path.add_argument('--text_dir', type=str, default='../data/text/', help='directory to the text transcripts')
-	text_path.add_argument('--meta_path', type=str, default='meta.csv', help='path to the model ready training text transcripts')
 	text_path.add_argument('--mapper_path', type=str, default='mapper.txt', help='path to the encoding mapper')
 
 	input_path = parser.add_argument_group('text_input_path')
@@ -145,7 +150,7 @@ def make_meta_text(meta_path, text_dir, all_text_output_path, text_input_file_li
 		ans = pinyin(txt_ch, style=Style.TONE2, errors=lambda x: x, strict=False)
 		return [x[0] for x in ans if x[0] != 'EMPH_A']
 	
-	with open(os.path.join(text_dir, meta_path), 'w') as w:
+	with open(meta_path, 'w') as w:
 		with open(os.path.join(text_dir, all_text_output_path), 'r') as r:
 			lines = r.readlines()
 			for line in lines:
@@ -157,10 +162,9 @@ def make_meta_text(meta_path, text_dir, all_text_output_path, text_input_file_li
 ###################
 # MAKE META AUDIO #
 ###################
-def make_meta_audio(meta_path, text_dir, all_text_output_path, text_input_file_list):
-	os.makedirs(out_dir, exist_ok=True)
-	metadata = build_from_path(meta_path, wav_dir, out_dir, args.num_workers, tqdm=tqdm)
-	write_metadata(metadata, out_dir)
+def make_meta_audio(meta_text_path, input_wav_dir, meta_audio_dir, num_workers, frame_shift_ms):
+	metadata = build_from_path(meta_text_path, input_wav_dir, meta_audio_dir, num_workers, tqdm=tqdm)
+	write_metadata(metadata, meta_audio_dir, frame_shift_ms)
 
 
 ####################
@@ -236,8 +240,9 @@ def main():
 
 	#---preprocess text and data to be model ready---#
 	elif args.mode == 'all' or args.mode == 'model_ready':
-		make_meta_text(args.meta_path, args.text_dir, args.all_text_output_path, [args.text_output_train_path, args.text_output_dev_path, args.text_output_test_path])		
-		make_meta_audio()
+		os.makedirs(args.meta_audio_dir, exist_ok=True)
+		make_meta_text(args.meta_text_path, args.text_dir, args.all_text_output_path, [args.text_output_train_path, args.text_output_dev_path, args.text_output_test_path])		
+		make_meta_audio(args.meta_text_path, args.audio_output_dir, args.meta_audio_dir, args.num_workers, hparams.frame_shift_ms)
 
 	#---dataset analysis---#
 	elif args.mode == 'all' or args.mode == 'analysis':
