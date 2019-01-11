@@ -10,8 +10,8 @@ from pypinyin import Style, pinyin
 # In[91]:
 
 
-path = 'data/train_all.txt'
-meta = 'data/meta.csv'
+path = '../data/text/train_all.txt'
+meta = '../data/text/meta.csv'
 
 
 # In[93]:

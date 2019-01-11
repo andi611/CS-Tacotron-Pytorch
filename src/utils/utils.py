@@ -76,8 +76,8 @@ def highpass_filter(y, sr):
 
 
 
-def match_target_amplitude(wav, prefix='wav', target_dBFS=-10.0):
-	sound = AudioSegment.from_file(wav, prefix)
+def match_target_amplitude(wav, suffix='wav', target_dBFS=-10.0):
+	sound = AudioSegment.from_file(wav, suffix)
 	change_in_dBFS = target_dBFS - sound.dBFS
 	return sound.apply_gain(change_in_dBFS)
 
@@ -113,16 +113,16 @@ def visualization(name, y, yt, sr, output_dir, visualization_dir, multi_plot):
 	Checks if all audios have been correctly processed,
 	if not reprocess them.
 """
-def check():
+def check(input_dir, output_dir, file_suffix='*.wav'):
 	redo_list = []
 	
 	#---get original file names---#
-	wavs = sorted(glob.glob(os.path.join(input_dir, file_prefix) + '*.wav'))
+	wavs = sorted(glob.glob(os.path.join(input_dir, file_suffix)))
 	for i in range(len(wavs)):
 		wavs[i] = wavs[i].split('/')[-1] 
 	
 	#---get all preprocessed file names---#
-	wavs_preprocess = sorted(glob.glob(os.path.join(output_dir, file_prefix) + '*.wav'))
+	wavs_preprocess = sorted(glob.glob(os.path.join(output_dir, file_suffix)))
 	for i in range(len(wavs_preprocess)):
 		wavs_preprocess[i] = wavs_preprocess[i].split('/')[-1] 
 
