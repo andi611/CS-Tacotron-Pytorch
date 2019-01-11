@@ -14,7 +14,6 @@ import os
 import glob
 import math
 #-------------#
-import audio
 import librosa
 import librosa.display
 import numpy as np
@@ -25,6 +24,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 plt.switch_backend('agg')
 #-------------#
+from utils import audio
 from functools import partial
 from multiprocessing import cpu_count
 from concurrent.futures import ProcessPoolExecutor
