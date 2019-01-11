@@ -15,7 +15,7 @@ import glob
 import nltk
 import librosa
 import argparse
-from utils import *
+from utils import utils
 from tqdm import tqdm
 
 
@@ -99,24 +99,24 @@ def process_audio(input_dir, output_dir, visualization_dir, prefix='*.wav', star
 	if vis_origin:
 		for wav in wavs:
 			y, sr = librosa.load(wav)
-			visualization(wav.split('/')[-1].split('.')[0], y, None, sr, output_dir, visualization_dir, multi_plot=False)
+			utils.visualization(wav.split('/')[-1].split('.')[0], y, None, sr, output_dir, visualization_dir, multi_plot=False)
 	
 	else:
 		for i, wav in enumerate(tqdm(wavs)):
 			if i + 1 >= start_from:
 				
 				y, sr = librosa.load(wav)
-				yt = highpass_filter(y, sr)
+				yt = utils.highpass_filter(y, sr)
 
 				name = wav.split('/')[-1].split('.')[0]
 				new_wav = output_dir + name + '.wav'
 				librosa.output.write_wav(path=new_wav, y=yt.astype(np.float32), sr=sr)
 
-				sound = match_target_amplitude(new_wav, prefix='wav', target_dBFS=-10.0)
+				sound = utils.match_target_amplitude(new_wav, prefix='wav', target_dBFS=-10.0)
 				sound.export(new_wav, format="wav")
 
 				yt, sr = librosa.load(new_wav)
-				visualization(name, y, yt, sr, output_dir, visualization_dir, multi_plot)
+				utils.visualization(name, y, yt, sr, output_dir, visualization_dir, multi_plot)
 
 		print('Progress: %i/%i: Complete!' % (len(wavs), len(wavs)))
 		check()

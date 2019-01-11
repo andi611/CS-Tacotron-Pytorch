@@ -19,7 +19,7 @@ from utils.plot import plot_alignment
 from utils.text import text_to_sequence, symbols
 
 # The tacotron model
-from tacotron_pytorch import Tacotron
+from model import Tacotron
 
 import torch
 from torch.utils import data as data_utils
