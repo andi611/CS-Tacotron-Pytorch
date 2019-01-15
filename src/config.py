@@ -100,9 +100,9 @@ def get_config():
 	training_parser.add_argument('--checkpoint_interval', type=int, default=2000)
 
 	testing_parser = parser.add_argument_group('testing')
-	max_iters_parser.add_argument('--max_iters', type=int, default=200)
-	max_iters_parser.add_argument('--griffin_lim_iters', type=int, default=60)
-	max_iters_parser.add_argument('--power', type=float, default=1.5)
+	testing_parser.add_argument('--max_iters', type=int, default=200)
+	testing_parser.add_argument('--griffin_lim_iters', type=int, default=60)
+	testing_parser.add_argument('--power', type=float, default=1.5)
 
 	args = parser.parse_args()
 	return args
