@@ -14,17 +14,17 @@ import matplotlib
 matplotlib.use('Agg')
 import librosa.display
 from utils import audio
-from hparams import hparams
+from config import args
 import matplotlib.pyplot as plt
 
 
 #############
 # CONSTANTS #
 #############
-fs = hparams.sample_rate
-win = hparams.frame_length_ms
-hop = hparams.frame_shift_ms
-nfft = (hparams.num_freq - 1) * 2
+fs = args.sample_rate
+win = args.frame_length_ms
+hop = args.frame_shift_ms
+nfft = (args.num_freq - 1) * 2
 
 
 ##################
