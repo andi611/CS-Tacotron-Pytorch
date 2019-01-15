@@ -29,7 +29,6 @@ from docopt import docopt
 #----------------------------------------#
 import numpy as np
 import librosa.display
-from matplotlib import pyplot as plt
 #----------------------------------------#
 from utils import audio
 from utils.plot import plot_alignment
