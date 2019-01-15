@@ -20,7 +20,6 @@ import numpy as np
 from scipy import signal
 from pydub import AudioSegment
 #-------------#
-import matplotlib
 import matplotlib.pyplot as plt
 plt.switch_backend('agg')
 #-------------#

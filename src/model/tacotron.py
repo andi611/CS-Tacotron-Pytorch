@@ -1,12 +1,16 @@
-# coding: utf-8
-from __future__ import with_statement, print_function, absolute_import
-
+# -*- coding: utf-8 -*- #
+"""*********************************************************************************************"""
+#   FileName     [ tacotron.py ]
+#   Synopsis     [ Tacotron model in Pytorch ]
+#   Author       [ Ting-Wei Liu (Andi611) ]
+#   Copyright    [ Copyleft(c), Speech Lab, NTU, Taiwan ]
+"""*********************************************************************************************"""
 import torch
 from torch.autograd import Variable
 from torch import nn
 
-from .attention import BahdanauAttention, AttentionWrapper
-from .attention import get_mask_from_lengths
+from model.attention import BahdanauAttention, AttentionWrapper
+from model.attention import get_mask_from_lengths
 
 
 class Prenet(nn.Module):

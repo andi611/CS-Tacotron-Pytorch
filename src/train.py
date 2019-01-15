@@ -57,9 +57,13 @@ from tensorboardX import SummaryWriter
 ####################
 global_step = 0
 global_epoch = 0
-use_cuda = torch.cuda.is_available()
-if use_cuda:
+USE_CUDA = torch.cuda.is_available()
+if USE_CUDA:
 	cudnn.benchmark = False
+if args.data_root != None:
+	DATA_ROOT = args.data_root
+if args.meta_text != None:
+	META_TEXT = args.meta_text
 
 
 def _pad(seq, max_len):
@@ -77,7 +81,7 @@ class TextDataSource(FileDataSource):
 		pass #self._cleaner_names = [x.strip() for x in hparams.cleaners.split(',')]
 
 	def collect_files(self):
-		meta = os.path.join(DATA_ROOT, "meta_text.txt")
+		meta = os.path.join(DATA_ROOT, META_TEXT)
 		with open(meta, 'r', encoding='utf-8') as f:
 			lines = f.readlines()
 		lines = list(map(lambda l: l.split("|")[-1][:-1], lines))
@@ -92,7 +96,7 @@ class _NPYDataSource(FileDataSource):
 		self.col = col
 
 	def collect_files(self):
-		meta = os.path.join(DATA_ROOT, "meta_text.txt")
+		meta = os.path.join(DATA_ROOT, META_TEXT)
 		with open(meta, 'r', encoding='utf-8') as f:
 			lines = f.readlines()
 		lines = list(map(lambda l: l.split("|")[self.col], lines))
@@ -235,7 +239,7 @@ def train(model, data_loader, optimizer,
 
 			# Feed data
 			x, mel, y = Variable(x), Variable(mel), Variable(y)
-			if use_cuda:
+			if USE_CUDA:
 				x, mel, y = x.cuda(), mel.cuda(), y.cuda()
 			mel_outputs, linear_outputs, attn = model(
 				x, mel, input_lengths=sorted_lengths)
@@ -304,12 +308,6 @@ if __name__ == "__main__":
 	args = get_config()
 	checkpoint_dir = args.checkpoint_dir
 	checkpoint_path = args.checkpoint_path
-	data_root = args.data_root
-	if data_root:
-		DATA_ROOT = data_root
-
-	# # Override hyper parameters
-	# hparams.parse(args["--hparams"])
 
 	os.makedirs(checkpoint_dir, exist_ok=True)
 
@@ -327,18 +325,18 @@ if __name__ == "__main__":
 
 	# Model
 	model = Tacotron(n_vocab=len(symbols),
-					 embedding_dim=256,
+					 embedding_dim=args.embedding_dim,
 					 mel_dim=args.num_mels,
 					 linear_dim=args.num_freq,
 					 r=args.outputs_per_step,
 					 padding_idx=args.padding_idx,
-					 use_memory_mask=args.use_memory_mask,
-					 )
-	if use_cuda:
+					 use_memory_mask=args.use_memory_mask,)
+	if USE_CUDA:
 		model = model.cuda()
+
 	optimizer = optim.Adam(model.parameters(),
-						   lr=args.initial_learning_rate, betas=(
-							   args.adam_beta1, args.adam_beta2),
+						   lr=args.initial_learning_rate, 
+						   betas=(args.adam_beta1, args.adam_beta2),
 						   weight_decay=args.weight_decay)
 
 	# Load checkpoint
@@ -351,8 +349,8 @@ if __name__ == "__main__":
 			global_step = checkpoint["global_step"]
 			global_epoch = checkpoint["global_epoch"]
 		except:
-			# TODO
-			pass
+			print('Warning: global step and global epoch unable to restore!')
+			sys.exit(0)
 
 	# Setup tensorboard logger
 	#tensorboard_logger.configure("log/run-test")
@@ -369,8 +367,6 @@ if __name__ == "__main__":
 			  sample_rate=args.sample_rate)
 	except KeyboardInterrupt:
 		pass
-		#save_checkpoint(
-		#    model, optimizer, global_step, checkpoint_dir, global_epoch)
 
 	print("Finished")
 	sys.exit(0)

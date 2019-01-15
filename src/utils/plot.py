@@ -10,12 +10,11 @@
 ###############
 # IMPORTATION #
 ###############
-import matplotlib
-matplotlib.use('Agg')
 import librosa.display
 from utils import audio
 from config import args
 import matplotlib.pyplot as plt
+plt.switch_backend('agg')
 
 
 #############
