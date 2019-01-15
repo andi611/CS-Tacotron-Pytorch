@@ -44,7 +44,7 @@ import torch.backends.cudnn as cudnn
 from torch.utils import data as data_utils
 #----------------------------------------#
 from model.tacotron import Tacotron
-from config import args
+from config import args, get_config
 #----------------------------------------#
 from nnmnkwii.datasets import FileSourceDataset, FileDataSource
 from tensorboardX import SummaryWriter
