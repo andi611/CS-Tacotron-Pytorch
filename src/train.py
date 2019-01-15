@@ -207,7 +207,7 @@ def train(model, data_loader, optimizer,
 		  init_lr=0.002,
 		  checkpoint_dir=None, checkpoint_interval=None, nepochs=None,
 		  clip_thresh=1.0,
-		  sample_rate):
+		  sample_rate=20000):
 
 	writer = SummaryWriter()
 	model.train()
