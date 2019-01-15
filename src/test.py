@@ -22,14 +22,13 @@ from utils.text import text_to_sequence, symbols
 from utils.utils import test_visualize
 #--------------------------------#
 from synthesis import tts
-from model import Tacotron
-from hparams import hparams
+from model.tacotron import Tacotron
+from config import args
 
 
 #############
 # CONSTANTS #
 #############
-fs = hparams.sample_rate
 hop_length = 250
 
 
@@ -59,7 +58,7 @@ def synthesis_speech(model, text, figures=True, path=None):
 	waveform, alignment, spectrogram = tts(model, text)
 	if figures:
 		test_visualize(alignment, spectrogram, path)
-	librosa.output.write_wav(path + '.wav', waveform, fs)
+	librosa.output.write_wav(path + '.wav', waveform, args.sample_rate)
 
 
 #############
@@ -79,11 +78,11 @@ def main():
 	args = get_config()
 	model = Tacotron(n_vocab=len(symbols),
 					 embedding_dim=256,
-					 mel_dim=hparams.num_mels,
-					 linear_dim=hparams.num_freq,
-					 r=hparams.outputs_per_step,
-					 padding_idx=hparams.padding_idx,
-					 use_memory_mask=hparams.use_memory_mask)
+					 mel_dim=args.num_mels,
+					 linear_dim=args.num_freq,
+					 r=args.outputs_per_step,
+					 padding_idx=args.padding_idx,
+					 use_memory_mask=args.use_memory_mask)
 
 	#---handle path---#
 	checkpoint_path = args.ckpt_dir + checkpoint_name + model + '.pth'

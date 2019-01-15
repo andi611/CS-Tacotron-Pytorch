@@ -43,8 +43,8 @@ from torch.autograd import Variable
 import torch.backends.cudnn as cudnn
 from torch.utils import data as data_utils
 #----------------------------------------#
-from model import Tacotron
-from hparams import hparams, hparams_debug_string
+from model.tacotron import Tacotron
+from config import args
 #----------------------------------------#
 from nnmnkwii.datasets import FileSourceDataset, FileDataSource
 from tensorboardX import SummaryWriter
@@ -128,7 +128,7 @@ class PyTorchDataset(object):
 
 def collate_fn(batch):
 	"""Create batch"""
-	r = hparams.outputs_per_step
+	r = args.outputs_per_step
 	input_lengths = [len(x[0]) for x in batch]
 	max_input_len = np.max(input_lengths)
 	# Add single zeros frame at least, so plus 1
@@ -301,16 +301,15 @@ def save_checkpoint(model, optimizer, step, checkpoint_dir, epoch):
 
 
 if __name__ == "__main__":
-	args = docopt(__doc__)
-	print("Command line args:\n", args)
-	checkpoint_dir = args["--checkpoint-dir"]
-	checkpoint_path = args["--checkpoint-path"]
-	data_root = args["--data-root"]
+	args = get_config()
+	checkpoint_dir = args.checkpoint_dir
+	checkpoint_path = args.checkpoint_path
+	data_root = args.data_root
 	if data_root:
 		DATA_ROOT = data_root
 
-	# Override hyper parameters
-	hparams.parse(args["--hparams"])
+	# # Override hyper parameters
+	# hparams.parse(args["--hparams"])
 
 	os.makedirs(checkpoint_dir, exist_ok=True)
 
@@ -322,28 +321,28 @@ if __name__ == "__main__":
 	# Dataset and Dataloader setup
 	dataset = PyTorchDataset(X, Mel, Y)
 	data_loader = data_utils.DataLoader(
-		dataset, batch_size=hparams.batch_size,
-		num_workers=hparams.num_workers, shuffle=True,
-		collate_fn=collate_fn, pin_memory=hparams.pin_memory)
+		dataset, batch_size=args.batch_size,
+		num_workers=args.num_workers, shuffle=True,
+		collate_fn=collate_fn, pin_memory=args.pin_memory)
 
 	# Model
 	model = Tacotron(n_vocab=len(symbols),
 					 embedding_dim=256,
-					 mel_dim=hparams.num_mels,
-					 linear_dim=hparams.num_freq,
-					 r=hparams.outputs_per_step,
-					 padding_idx=hparams.padding_idx,
-					 use_memory_mask=hparams.use_memory_mask,
+					 mel_dim=args.num_mels,
+					 linear_dim=args.num_freq,
+					 r=args.outputs_per_step,
+					 padding_idx=args.padding_idx,
+					 use_memory_mask=args.use_memory_mask,
 					 )
 	if use_cuda:
 		model = model.cuda()
 	optimizer = optim.Adam(model.parameters(),
-						   lr=hparams.initial_learning_rate, betas=(
-							   hparams.adam_beta1, hparams.adam_beta2),
-						   weight_decay=hparams.weight_decay)
+						   lr=args.initial_learning_rate, betas=(
+							   args.adam_beta1, args.adam_beta2),
+						   weight_decay=args.weight_decay)
 
 	# Load checkpoint
-	if checkpoint_path:
+	if checkpoint_path != None:
 		print("Load checkpoint from: {}".format(checkpoint_path))
 		checkpoint = torch.load(checkpoint_path)
 		model.load_state_dict(checkpoint["state_dict"])
@@ -358,17 +357,16 @@ if __name__ == "__main__":
 	# Setup tensorboard logger
 	#tensorboard_logger.configure("log/run-test")
 
-	print(hparams_debug_string())
 
 	# Train!
 	try:
 		train(model, data_loader, optimizer,
-			  init_lr=hparams.initial_learning_rate,
+			  init_lr=args.initial_learning_rate,
 			  checkpoint_dir=checkpoint_dir,
-			  checkpoint_interval=hparams.checkpoint_interval,
-			  nepochs=hparams.nepochs,
-			  clip_thresh=hparams.clip_thresh,
-			  sample_rate=hparams.sample_rate)
+			  checkpoint_interval=args.checkpoint_interval,
+			  nepochs=args.nepochs,
+			  clip_thresh=args.clip_thresh,
+			  sample_rate=args.sample_rate)
 	except KeyboardInterrupt:
 		pass
 		#save_checkpoint(

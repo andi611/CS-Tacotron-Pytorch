@@ -18,7 +18,7 @@ import argparse
 import numpy as np
 from tqdm import tqdm
 from utils import utils
-from hparams import hparams
+from config import args
 from pypinyin import Style, pinyin
 from multiprocessing import cpu_count
 
@@ -243,7 +243,7 @@ def main():
 
 	#---preprocess text and data to be model ready---#
 	elif args.mode == 'all' or args.mode == 'model_ready':
-		make_meta(args.train_all_meta_path, args.audio_output_dir, args.meta_audio_dir, args.num_workers, hparams.frame_shift_ms)
+		make_meta(args.train_all_meta_path, args.audio_output_dir, args.meta_audio_dir, args.num_workers, args.frame_shift_ms)
 
 	#---dataset analysis---#
 	elif args.mode == 'all' or args.mode == 'analysis':

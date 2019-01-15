@@ -26,8 +26,8 @@ from torch.autograd import Variable
 import numpy as np
 import nltk
 
-from tacotron_pytorch import Tacotron
-from hparams import hparams
+from model.tacotron import Tacotron
+from config import args
 
 from tqdm import tqdm
 
@@ -74,11 +74,11 @@ if __name__ == "__main__":
 
     model = Tacotron(n_vocab=len(symbols),
                      embedding_dim=256,
-                     mel_dim=hparams.num_mels,
-                     linear_dim=hparams.num_freq,
-                     r=hparams.outputs_per_step,
-                     padding_idx=hparams.padding_idx,
-                     use_memory_mask=hparams.use_memory_mask,
+                     mel_dim=args.num_mels,
+                     linear_dim=args.num_freq,
+                     r=args.outputs_per_step,
+                     padding_idx=args.padding_idx,
+                     use_memory_mask=args.use_memory_mask,
                      )
     checkpoint = torch.load(checkpoint_path)
     model.load_state_dict(checkpoint["state_dict"])
