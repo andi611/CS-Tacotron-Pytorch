@@ -176,7 +176,7 @@ def save_states(global_step, mel_outputs, linear_outputs, attn, y,
 		global_step))
 	# alignment = attn[idx].cpu().data.numpy()[:, :input_length]
 	alignment = attn[idx].cpu().data.numpy()
-	plot_alignment(attn.T, path, info="tacotron, step={}".format(global_step))
+	plot_alignment(alignment.T, path, info="tacotron, step={}".format(global_step))
 
 	# Predicted spectrogram
 	path = os.path.join(checkpoint_dir, "step{}_predicted_spectrogram.png".format(
