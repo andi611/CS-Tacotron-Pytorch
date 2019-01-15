@@ -21,43 +21,7 @@ from utils import utils
 from config import args
 from pypinyin import Style, pinyin
 from multiprocessing import cpu_count
-
-
-##################
-# CONFIGURATIONS #
-##################
-def get_config():
-	parser = argparse.ArgumentParser(description='preprocess')
-
-	parser.add_argument('--mode', choices=['text', 'audio', 'model_ready', 'analysis', 'all'], default='all', help='what to preprocess')
-	parser.add_argument('--num_workers', type=int, default=cpu_count(), help='multi-thread processing')
-
-	meta_path = parser.add_argument_group('meta_path')
-	meta_path.add_argument('--meta_audio_dir', type=str, default='../data/meta/', help='path to the model ready training acoustic features')
-	
-	audio_path = parser.add_argument_group('audio_path')
-	audio_path.add_argument('--audio_input_dir', type=str, default='../data/audio/original/', help='directory path to the original audio data')
-	audio_path.add_argument('--audio_output_dir', type=str, default='../data/audio/processed/', help='directory path to output the processed audio data')
-	audio_path.add_argument('--visualization_dir', type=str, default='../data/audio/visualization/', help='directory path to output the audio visualization images')
-	
-	text_path = parser.add_argument_group('text_path')
-	text_path.add_argument('--text_dir', type=str, default='../data/text/', help='directory to the text transcripts')
-	text_path.add_argument('--mapper_path', type=str, default='mapper.txt', help='path to the encoding mapper')
-
-	input_path = parser.add_argument_group('text_input_path')
-	input_path.add_argument('--text_input_train_path', type=str, default='train_ori.txt', help='path to the original training text data')
-	input_path.add_argument('--text_input_dev_path', type=str, default='dev_ori.txt', help='path to the original development text data')
-	input_path.add_argument('--text_input_test_path', type=str, default='test_ori.txt', help='path to the original testing text data')
-	input_path.add_argument('--train_all_meta_path', type=str, default='../data/text/train_all_pinyin.txt', help='path to the model ready training text transcripts')
-	
-	output_path = parser.add_argument_group('text_output_path')
-	output_path.add_argument('--text_output_train_path', type=str, default='train.txt', help='path to the processed training text data')
-	output_path.add_argument('--text_output_dev_path', type=str, default='dev.txt', help='path to the processed development text data')
-	output_path.add_argument('--text_output_test_path', type=str, default='test.txt', help='path to the processed testing text data')
-	output_path.add_argument('--all_text_output_path', type=str, default='train_all.txt', help='path to the joint processed text data')
-
-	args = parser.parse_args()
-	return args
+from config import get_preprocess_config
 
 
 ################
@@ -220,34 +184,34 @@ def dataset_analysis(wav_dir, text_dir, text_input_file_list):
 ########
 def main():
 
-	args = get_config()
+	config = get_preprocess_config()
 	
 	#---preprocess text---#
-	if args.mode == 'all' or args.mode == 'text':
-		mapper = utils.get_mapper(os.path.join(args.text_dir, args.mapper_path))
-		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_train_path), output_path=os.path.join(args.text_dir, args.text_output_train_path))
-		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_dev_path), output_path=os.path.join(args.text_dir, args.text_output_dev_path))
-		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_test_path), output_path=os.path.join(args.text_dir, args.text_output_test_path))
-		process_pinyin(args.train_all_meta_path, args.text_dir, args.all_text_output_path, [args.text_output_train_path, args.text_output_dev_path, args.text_output_test_path])		
+	if config.mode == 'all' or config.mode == 'text':
+		mapper = utils.get_mapper(os.path.join(config.text_dir, config.mapper_path))
+		process_text(mapper, input_path=os.path.join(config.text_dir, config.text_input_train_path), output_path=os.path.join(config.text_dir, config.text_output_train_path))
+		process_text(mapper, input_path=os.path.join(config.text_dir, config.text_input_dev_path), output_path=os.path.join(config.text_dir, config.text_output_dev_path))
+		process_text(mapper, input_path=os.path.join(config.text_dir, config.text_input_test_path), output_path=os.path.join(config.text_dir, config.text_output_test_path))
+		process_pinyin(config.train_all_meta_path, config.text_dir, config.all_text_output_path, [config.text_output_train_path, config.text_output_dev_path, config.text_output_test_path])		
 
 	#---preprocess audio---#
-	elif args.mode == 'all' or args.mode == 'audio':
-		process_audio(args.audio_input_dir, 
-					  args.audio_output_dir, 
-					  args.visualization_dir, 
+	elif config.mode == 'all' or config.mode == 'audio':
+		process_audio(config.audio_input_dir, 
+					  config.audio_output_dir, 
+					  config.visualization_dir, 
 					  file_suffix='*.wav', 
 					  start_from=0, 
 					  multi_plot=True, 
 					  vis_origin=False)
-		utils.check(args.audio_input_dir, args.audio_output_dir, file_suffix='*.wav')
+		utils.check(config.audio_input_dir, config.audio_output_dir, file_suffix='*.wav')
 
 	#---preprocess text and data to be model ready---#
-	elif args.mode == 'all' or args.mode == 'model_ready':
-		make_meta(args.train_all_meta_path, args.audio_output_dir, args.meta_audio_dir, args.num_workers, args.frame_shift_ms)
+	elif config.mode == 'all' or config.mode == 'model_ready':
+		make_meta(config.train_all_meta_path, config.audio_output_dir, config.meta_audio_dir, config.num_workers, args.frame_shift_ms)
 
 	#---dataset analysis---#
-	elif args.mode == 'all' or args.mode == 'analysis':
-		dataset_analysis(args.audio_input_dir, args.text_dir, [args.text_output_train_path, args.text_output_dev_path, args.text_output_test_path])
+	elif config.mode == 'all' or config.mode == 'analysis':
+		dataset_analysis(config.audio_input_dir, config.text_dir, [config.text_output_train_path, config.text_output_dev_path, config.text_output_test_path])
 	
 	else:
 		raise RuntimeError('Invalid mode!')

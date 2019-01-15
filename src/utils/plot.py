@@ -10,6 +10,7 @@
 ###############
 # IMPORTATION #
 ###############
+import numpy as np
 import librosa.display
 from utils import audio
 from config import args
@@ -24,6 +25,7 @@ fs = args.sample_rate
 win = args.frame_length_ms
 hop = args.frame_shift_ms
 nfft = (args.num_freq - 1) * 2
+hop_length = args.hop_length
 
 
 ##################
@@ -51,7 +53,7 @@ def plot_alignment(alignment, path, info=None):
 ####################
 # PLOT SPECTROGRAM #
 ####################
-def plot_spectrogram(path, linear_output):
+def plot_spectrogram(linear_output, path):
 	spectrogram = audio._denormalize(linear_output)
 	plt.gcf().clear()
 	plt.figure(figsize=(16, 10))

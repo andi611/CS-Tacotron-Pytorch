@@ -73,7 +73,7 @@ if __name__ == "__main__":
     file_name_suffix = args["--file-name-suffix"]
 
     model = Tacotron(n_vocab=len(symbols),
-                     embedding_dim=256,
+                     embedding_dim=args.embedding_dim,
                      mel_dim=args.num_mels,
                      linear_dim=args.num_freq,
                      r=args.outputs_per_step,

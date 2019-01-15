@@ -33,8 +33,6 @@ import librosa.display
 from utils import audio
 from utils.plot import plot_alignment
 from utils.text import text_to_sequence, symbols
-
-# The tacotron model
 #----------------------------------------#
 import torch
 from torch import nn
@@ -44,7 +42,7 @@ import torch.backends.cudnn as cudnn
 from torch.utils import data as data_utils
 #----------------------------------------#
 from model.tacotron import Tacotron
-from config import args, get_config
+from config import args, get_training_config
 #----------------------------------------#
 from nnmnkwii.datasets import FileSourceDataset, FileDataSource
 from tensorboardX import SummaryWriter
@@ -60,10 +58,11 @@ global_epoch = 0
 USE_CUDA = torch.cuda.is_available()
 if USE_CUDA:
 	cudnn.benchmark = False
-if args.data_root != None:
-	DATA_ROOT = args.data_root
-if args.meta_text != None:
-	META_TEXT = args.meta_text
+config = get_training_config()
+if config.data_root != None:
+	DATA_ROOT = config.data_root
+if config.meta_text != None:
+	META_TEXT = config.meta_text
 
 
 def _pad(seq, max_len):
@@ -156,14 +155,6 @@ def collate_fn(batch):
 	return x_batch, input_lengths, mel_batch, y_batch
 
 
-def save_alignment(path, attn):
-	plot_alignment(attn.T, path, info="tacotron, step={}".format(global_step))
-
-
-def save_spectrogram(path, linear_output):
-	plot_spectrogram(path, linear_output)
-
-
 def _learning_rate_decay(init_lr, global_step):
 	warmup_steps = 6000.0
 	step = global_step + 1.
@@ -185,13 +176,13 @@ def save_states(global_step, mel_outputs, linear_outputs, attn, y,
 		global_step))
 	# alignment = attn[idx].cpu().data.numpy()[:, :input_length]
 	alignment = attn[idx].cpu().data.numpy()
-	save_alignment(path, alignment)
+	plot_alignment(attn.T, path, info="tacotron, step={}".format(global_step))
 
 	# Predicted spectrogram
 	path = os.path.join(checkpoint_dir, "step{}_predicted_spectrogram.png".format(
 		global_step))
 	linear_output = linear_outputs[idx].cpu().data.numpy()
-	save_spectrogram(path, linear_output)
+	plot_spectrogram(linear_output, path)
 
 	# Predicted audio signal
 	signal = audio.inv_spectrogram(linear_output.T)
@@ -203,12 +194,16 @@ def save_states(global_step, mel_outputs, linear_outputs, attn, y,
 	path = os.path.join(checkpoint_dir, "step{}_target_spectrogram.png".format(
 		global_step))
 	linear_output = y[idx].cpu().data.numpy()
-	save_spectrogram(path, linear_output)
+	plot_spectrogram(linear_output, path)
 
 
-def train(model, data_loader, optimizer,
+def train(model, 
+		  data_loader, 
+		  optimizer,
 		  init_lr=0.002,
-		  checkpoint_dir=None, checkpoint_interval=None, nepochs=None,
+		  checkpoint_dir=None, 
+		  checkpoint_interval=None, 
+		  nepochs=None,
 		  clip_thresh=1.0,
 		  sample_rate=20000):
 
@@ -304,11 +299,10 @@ def save_checkpoint(model, optimizer, step, checkpoint_dir, epoch):
 	print("Saved checkpoint:", checkpoint_path)
 
 
-if __name__ == "__main__":
-	args = get_config()
-	checkpoint_dir = args.checkpoint_dir
-	checkpoint_path = args.checkpoint_path
+def main():
 
+	checkpoint_dir = config.checkpoint_dir
+	checkpoint_path = config.checkpoint_path
 	os.makedirs(checkpoint_dir, exist_ok=True)
 
 	# Input dataset definitions
@@ -370,3 +364,7 @@ if __name__ == "__main__":
 
 	print("Finished")
 	sys.exit(0)
+
+
+if __name__ == "__main__":
+	main()

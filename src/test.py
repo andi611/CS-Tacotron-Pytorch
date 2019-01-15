@@ -13,42 +13,21 @@
 import os
 import torch
 import numpy as np
+import argparse
 import librosa
 import librosa.display
 from pypinyin import Style, pinyin
 #--------------------------------#
+from config import args
 from utils import audio
 from utils.text import text_to_sequence, symbols
-from utils.utils import test_visualize
+from utils.plot import test_visualize
 #--------------------------------#
 from synthesis import tts
 from model.tacotron import Tacotron
-from config import args
+from config import get_test_config
 
 
-#############
-# CONSTANTS #
-#############
-hop_length = 250
-
-
-##################
-# CONFIGURATIONS #
-##################
-def get_config():
-	parser = argparse.ArgumentParser(description='preprocess')
-
-	parser.add_argument('--plot', action='store_true', help='whether to plot')
-	parser.add_argument('--long_input', action='store_true', help='whether to set the model for long input')
-
-	path_parser = parser.add_argument_group('path')
-	path_parser.add_argument('--result_dir', type=str, default='../result/', help='path to output test results')
-	path_parser.add_argument('--ckpt_dir', type=str, default='../ckpt/', help='path to the directory where model checkpoints are saved')
-	path_parser.add_argument('--checkpoint_name', type=str, default='checkpoint_step', help='model name prefix for checkpoint files')
-	path_parser.add_argument('--model', type=str, default='130000', help='model step name for checkpoint files')
-	
-	args = parser.parse_args()
-	return args
 
 
 ####################
@@ -75,9 +54,10 @@ def ch2pinyin(txt_ch):
 def main():
 
 	#---initialize---#
-	args = get_config()
+	config = get_test_config()
+
 	model = Tacotron(n_vocab=len(symbols),
-					 embedding_dim=256,
+					 embedding_dim=args.embedding_dim,
 					 mel_dim=args.num_mels,
 					 linear_dim=args.num_freq,
 					 r=args.outputs_per_step,
@@ -85,21 +65,28 @@ def main():
 					 use_memory_mask=args.use_memory_mask)
 
 	#---handle path---#
-	checkpoint_path = args.ckpt_dir + checkpoint_name + model + '.pth'
-	output_name = args.result_dir + args.model
-	os.makedirs(args.result_dir, exist_ok=True)
+	checkpoint_path = config.ckpt_dir + config.checkpoint_name + config.model + '.pth'
+	output_name = config.result_dir + config.model
+	os.makedirs(config.result_dir, exist_ok=True)
 	
 	#---load and set model---#
+	print('Loading model: ', checkpoint_path)
 	checkpoint = torch.load(checkpoint_path)
 	model.load_state_dict(checkpoint["state_dict"])
-	if args.long_input:
+	if config.long_input:
 		model.decoder.max_decoder_steps = 500 # Set large max_decoder steps to handle long sentence outputs
 	
 	#---testing loop---#
 	while True:
 		try:
 			text = str(input('< Tacotron > Text to speech: '))
-			synthesis_speech(model, text=ch2pinyin(text), figures=args.plot, path=output_name)
+			text = ch2pinyin(text)
+			print('Model input: ', text)
+			synthesis_speech(model, text=text, figures=config.plot, path=output_name)
 		except KeyboardInterrupt:
+			print()
+			print('Terminating!')
 			break
 
+if __name__ == "__main__":
+	main()
