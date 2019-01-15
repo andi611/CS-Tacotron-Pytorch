@@ -1,4 +1,16 @@
-import tensorflow as tf
+# -*- coding: utf-8 -*- #
+"""*********************************************************************************************"""
+#   FileName     [ config.py ]
+#   Synopsis     [ configurations ]
+#   Author       [ Ting-Wei Liu (Andi611) ]
+#   Copyright    [ Copyleft(c), NTUEE, NTU, Taiwan ]
+"""*********************************************************************************************"""
+
+
+###############
+# IMPORTATION #
+###############
+import argparse
 
 
 # # Default hyperparameters:
