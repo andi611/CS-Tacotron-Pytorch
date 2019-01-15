@@ -10,12 +10,12 @@
 ###############
 # IMPORTATION #
 ###############
-from hparams import hparams
-from utils import audio
-import librosa.display
 import matplotlib
-import matplotlib.pyplot as plt
 matplotlib.use('Agg')
+import librosa.display
+from utils import audio
+from hparams import hparams
+import matplotlib.pyplot as plt
 
 
 #############
