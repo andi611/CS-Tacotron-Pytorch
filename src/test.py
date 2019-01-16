@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- #
 """*********************************************************************************************"""
-#   FileName     [ preprocess.py ]
-#   Synopsis     [ preprocess text transcripts and audio speech of the LectureDSP dataset for the Tacotron model ]
+#   FileName     [ test.py ]
+#   Synopsis     [ Testing algorithms for a trained Tacotron model ]
 #   Author       [ Ting-Wei Liu (Andi611) ]
 #   Copyright    [ Copyleft(c), Speech Lab, NTU, Taiwan ]
 """*********************************************************************************************"""

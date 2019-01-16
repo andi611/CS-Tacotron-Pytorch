@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- #
 """*********************************************************************************************"""
-#   FileName     [ tacotron.py ]
-#   Synopsis     [ Tacotron model in Pytorch ]
+#   FileName     [ attention.py ]
+#   Synopsis     [ Sequence to sequence attention module for Tacotron ]
 #   Author       [ Ting-Wei Liu (Andi611) ]
 #   Copyright    [ Copyleft(c), Speech Lab, NTU, Taiwan ]
 """*********************************************************************************************"""

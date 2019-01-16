@@ -13,16 +13,13 @@
 import os
 import glob
 import math
-#-------------#
+#------------#
 import librosa
 import librosa.display
 import numpy as np
 from scipy import signal
 from pydub import AudioSegment
-#-------------#
-import matplotlib.pyplot as plt
-plt.switch_backend('agg')
-#-------------#
+#----------------------------#
 from utils import audio
 from utils.plot import preprocess_visualization
 from functools import partial
