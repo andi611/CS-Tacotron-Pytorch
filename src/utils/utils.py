@@ -24,14 +24,9 @@ import matplotlib.pyplot as plt
 plt.switch_backend('agg')
 #-------------#
 from utils import audio
+from utils.plot import preprocess_visualization
 from functools import partial
 from concurrent.futures import ProcessPoolExecutor
-
-
-############
-# CONSTANT #
-############
-window_size = 256
 
 
 ##############
@@ -59,10 +54,11 @@ def get_mapper(path):
 						else: raise RuntimeError()
 	return mapper
 
+
 ####################
 # HIGH PASS FILTER #
 ####################
-def highpass_filter(y, sr):
+def _highpass_filter(y, sr):
 	filter_stop_freq = 100  # Hz
 	filter_pass_freq = 300  # Hz
 	filter_order = 1001
@@ -79,35 +75,31 @@ def highpass_filter(y, sr):
 	return yt
 
 
-
-def match_target_amplitude(wav, suffix='wav', target_dBFS=-10.0):
+##########################
+# MATCH TARGET AMPLITUDE #
+##########################
+def _match_target_amplitude(wav, suffix='wav', target_dBFS=-10.0):
 	sound = AudioSegment.from_file(wav, suffix)
 	change_in_dBFS = target_dBFS - sound.dBFS
 	return sound.apply_gain(change_in_dBFS)
 
 
-#################
-# VISUALIZATION #
-#################
-"""
-	visualize the preprocessed waveforms
-"""
-def visualization(name, y, yt, sr, output_dir, visualization_dir, multi_plot):
-	#---visualization---#
-	plt.figure(figsize=(16, 4))
-	if multi_plot:
-		plt.subplot(2, 1, 1)
-		librosa.display.waveplot(yt, sr=sr, color='r')
-		plt.title('Processed Waveform')
-		plt.subplot(2, 1, 2)
-	librosa.display.waveplot(y, sr=sr, color='tab:orange')
-	plt.title('Original Waveform')
-	plt.tight_layout()
+##########################
+# APPLY AUDIO PREPROCESS#
+##########################
+def apply_audio_preprocess(wav, target_dBFS, file_suffix, output_dir, visualization_dir, vis_process)
+	y, sr = librosa.load(wav)
+	yt = _highpass_filter(y, sr)
 
-	#---save---#
-	plt.savefig(visualization_dir + name + '.jpeg')
-	plt.close()
+	name = wav.split('/')[-1].split('.')[0]
+	new_wav = output_dir + name + file_suffix # -> '.wav'
+	librosa.output.write_wav(path=new_wav, y=yt.astype(np.float32), sr=sr)
 
+	sound = _match_target_amplitude(new_wav, suffix=file_suffix.strip('.'), target_dBFS=target_dBFS)
+	sound.export(new_wav, format=file_suffix.strip('.'))
+
+	yt, sr = librosa.load(new_wav)
+	preprocess_visualization(name, y, yt, sr, output_dir, visualization_dir, vis_process)
 
 
 #########
@@ -144,6 +136,9 @@ def check(input_dir, output_dir, file_suffix='*.wav'):
 		print('Audio pre-processing complete!')
 
 
+###################
+# WRITE META DATA #
+###################
 def write_meta_data(metadata, out_dir, meta_text, frame_shift_ms):
 	with open(os.path.join(out_dir, meta_text), 'w', encoding='utf-8') as f:
 		for m in metadata:
@@ -155,21 +150,25 @@ def write_meta_data(metadata, out_dir, meta_text, frame_shift_ms):
 		print('Max output length: %d' % max(m[2] for m in metadata))
 
 
-def build_from_path(transcript_path, wav_dir, out_dir, num_workers=1, tqdm=lambda x: x):
-	'''Preprocesses the LJ Speech dataset from a given input path into a given output directory.
+###################
+# BUILD FROM PATH #
+###################
+"""
+	Preprocesses the dataset from given input paths into a given output directory.
+	Use ProcessPoolExecutor to parallize across processes. This is just an optimization and you
+	can omit it and just call _process_utterance on each input if you want.
 
 	Args:
-		in_dir: The directory where you have downloaded the LJ Speech dataset
+		transcript_path: The path to the transcript file
+		wav_dir: The directory where the audio is contained
 		out_dir: The directory to write the output into
 		num_workers: Optional number of worker processes to parallelize across
 		tqdm: You can optionally pass tqdm to get a nice progress bar
 
 	Returns:
-		A list of tuples describing the training examples. This should be written to meta_text.txt
-	'''
-
-	# We use ProcessPoolExecutor to parallize across processes. This is just an optimization and you
-	# can omit it and just call _process_utterance on each input if you want.
+		A list of tuples describing the training examples. This should be written to meta_text.txt by 'write_meta_data'
+"""
+def build_from_path(transcript_path, wav_dir, out_dir, num_workers=1, tqdm=lambda x: x):
 	executor = ProcessPoolExecutor(max_workers=num_workers)
 	futures = []
 	index = 1
@@ -183,21 +182,25 @@ def build_from_path(transcript_path, wav_dir, out_dir, num_workers=1, tqdm=lambd
 	return [future.result() for future in tqdm(futures)]
 
 
-def _process_utterance(out_dir, index, wav_path, text):
-	'''Preprocesses a single utterance audio/text pair.
+#####################
+# PROCESS UTTERANCE #
+#####################
+"""
+	Preprocesses a single utterance audio/text pair.
 
 	This writes the mel and linear scale spectrograms to disk and returns a tuple to write
 	to the meta_text.txt file.
 
 	Args:
-	out_dir: The directory to write the spectrograms into
-	index: The numeric index to use in the spectrogram filenames.
-	wav_path: Path to the audio file containing the speech input
-	text: The text spoken in the input audio file
+		out_dir: The directory to write the spectrograms into
+		index: The numeric index to use in the spectrogram filenames.
+		wav_path: Path to the audio file containing the speech input
+		text: The text spoken in the input audio file
 
 	Returns:
-	A (spectrogram_filename, mel_filename, n_frames, text) tuple to write to meta_text.txt
-	'''
+		A (spectrogram_filename, mel_filename, n_frames, text) tuple to write to meta_text.txt
+"""
+def _process_utterance(out_dir, index, wav_path, text):
 
 	# Load the audio to a numpy array:
 	wav = audio.load_wav(wav_path)

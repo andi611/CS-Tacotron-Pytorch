@@ -18,10 +18,9 @@ import argparse
 import numpy as np
 from tqdm import tqdm
 from utils import utils
-from config import args
 from pypinyin import Style, pinyin
-from multiprocessing import cpu_count
-from config import get_preprocess_config
+from config import config, get_preprocess_args
+from concurrent.futures import ProcessPoolExecutor
 
 
 ################
@@ -51,11 +50,29 @@ def process_text(mapper, input_path, output_path):
 # PROCESS AUDIO #
 #################
 """
-	Trim out the noisy parts in the audios,
-	add begining and ending silence, and finally realign them.
-	Reprocess .wav files into clean and aligned .wav audios files.
+	Preprocesses the audio files from given input path into given output directories.
+	Use ProcessPoolExecutor to parallize across processes. This is just an optimization and you
+	can omit it and just call _process_utterance on each input if you want.
+
+	Args:
+		transcript_path: The path to the transcript file
+		input_dir: The directory where the audio is contained
+		output_dir: The directory to write the output processed audio to
+		visualization_dir: The directory to write the output plot to
+		file_suffix: Filename extension of audio files
+		start_from: The file index to start processing, if the preprocess progress is interupt, use this index to resume
+		num_workers: Optional number of worker processes to parallelize across
+		tqdm: You can optionally pass tqdm to get a nice progress bar
+		vis_process: visualize the preprocess effect
+		vis_origin: visualize the original waveform
+
+	Returns:
+		A list of tuples describing the training examples. This should be written to meta_text.txt by 'write_meta_data'
 """
-def process_audio(input_dir, output_dir, visualization_dir, file_suffix='*.wav', start_from=0, multi_plot=False, vis_origin=False):
+def process_audio(input_dir, output_dir, visualization_dir, target_dBFS,
+				  file_suffix='.wav', start_from=0, 
+				  num_workers=1, tqdm=lambda x: x,
+				  vis_process=False, vis_origin=False):
 
 	if not os.path.isdir(input_dir):
 		raise ValueError('Please make sure there are .wav files in the directory: ', input_dir)
@@ -70,30 +87,22 @@ def process_audio(input_dir, output_dir, visualization_dir, file_suffix='*.wav',
 	if not os.path.isdir(visualization_dir):
 		os.makedirs(visualization_dir)	
 
-	wavs = sorted(glob.glob(os.path.join(input_dir, file_suffix)))
+	wavs = sorted(glob.glob(os.path.join(input_dir, '*' + file_suffix)))
 	
 	if vis_origin:
 		for wav in wavs:
 			y, sr = librosa.load(wav)
-			utils.visualization(wav.split('/')[-1].split('.')[0], y, None, sr, output_dir, visualization_dir, multi_plot=False)
+			utils.visualization(wav.split('/')[-1].split('.')[0], y, None, sr, output_dir, visualization_dir, vis_process=False)
 	
 	else:
+		executor = ProcessPoolExecutor(max_workers=num_workers)
+		futures = []
+
 		for i, wav in enumerate(tqdm(wavs)):
 			if i + 1 >= start_from:
-				
-				y, sr = librosa.load(wav)
-				yt = utils.highpass_filter(y, sr)
+				futures.append(executor.submit(partial(utils.apply_audio_preprocess, wav, target_dBFS, file_suffix, output_dir, visualization_dir, vis_process)))
 
-				name = wav.split('/')[-1].split('.')[0]
-				new_wav = output_dir + name + '.wav'
-				librosa.output.write_wav(path=new_wav, y=yt.astype(np.float32), sr=sr)
-
-				sound = utils.match_target_amplitude(new_wav, suffix='wav', target_dBFS=-10.0)
-				sound.export(new_wav, format="wav")
-
-				yt, sr = librosa.load(new_wav)
-				utils.visualization(name, y, yt, sr, output_dir, visualization_dir, multi_plot)
-
+		for future in tqdm(futures): future.result()
 		print('Progress: %i/%i: Complete!' % (len(wavs), len(wavs)))
 
 
@@ -184,34 +193,37 @@ def dataset_analysis(wav_dir, text_dir, text_input_file_list):
 ########
 def main():
 
-	config = get_preprocess_config()
+	args = get_preprocess_args()
 	
 	#---preprocess text---#
-	if config.mode == 'all' or config.mode == 'text':
-		mapper = utils.get_mapper(os.path.join(config.text_dir, config.mapper_path))
-		process_text(mapper, input_path=os.path.join(config.text_dir, config.text_input_train_path), output_path=os.path.join(config.text_dir, config.text_output_train_path))
-		process_text(mapper, input_path=os.path.join(config.text_dir, config.text_input_dev_path), output_path=os.path.join(config.text_dir, config.text_output_dev_path))
-		process_text(mapper, input_path=os.path.join(config.text_dir, config.text_input_test_path), output_path=os.path.join(config.text_dir, config.text_output_test_path))
-		process_pinyin(config.train_all_meta_path, config.text_dir, config.all_text_output_path, [config.text_output_train_path, config.text_output_dev_path, config.text_output_test_path])		
+	if args.mode == 'all' or args.mode == 'text':
+		mapper = utils.get_mapper(os.path.join(args.text_dir, args.mapper_path))
+		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_train_path), output_path=os.path.join(args.text_dir, args.text_output_train_path))
+		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_dev_path), output_path=os.path.join(args.text_dir, args.text_output_dev_path))
+		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_test_path), output_path=os.path.join(args.text_dir, args.text_output_test_path))
+		process_pinyin(args.train_all_meta_path, args.text_dir, args.all_text_output_path, [args.text_output_train_path, args.text_output_dev_path, args.text_output_test_path])		
 
 	#---preprocess audio---#
-	elif config.mode == 'all' or config.mode == 'audio':
-		process_audio(config.audio_input_dir, 
-					  config.audio_output_dir, 
-					  config.visualization_dir, 
-					  file_suffix='*.wav', 
-					  start_from=0, 
-					  multi_plot=True, 
+	elif args.mode == 'all' or args.mode == 'audio':
+		process_audio(args.audio_input_dir, 
+					  args.audio_output_dir, 
+					  args.visualization_dir, 
+					  target_dBFS=-10.0,
+					  file_suffix='.wav', 
+					  start_from=0,
+					  num_workers=args.num_workers, 
+					  tqdm=tqdm,
+					  vis_process=True, 
 					  vis_origin=False)
-		utils.check(config.audio_input_dir, config.audio_output_dir, file_suffix='*.wav')
+		utils.check(args.audio_input_dir, args.audio_output_dir, file_suffix='*.wav')
 
 	#---preprocess text and data to be model ready---#
-	elif config.mode == 'all' or config.mode == 'model_ready':
-		make_meta(config.train_all_meta_path, config.audio_output_dir, config.meta_audio_dir, config.meta_text, config.num_workers, args.frame_shift_ms)
+	elif args.mode == 'all' or args.mode == 'model_ready':
+		make_meta(args.train_all_meta_path, args.audio_output_dir, args.meta_audio_dir, args.meta_text, args.num_workers, config.frame_shift_ms)
 
 	#---dataset analysis---#
-	elif config.mode == 'all' or config.mode == 'analysis':
-		dataset_analysis(config.audio_input_dir, config.text_dir, [config.text_output_train_path, config.text_output_dev_path, config.text_output_test_path])
+	elif args.mode == 'all' or args.mode == 'analysis':
+		dataset_analysis(args.audio_input_dir, args.text_dir, [args.text_output_train_path, args.text_output_dev_path, args.text_output_test_path])
 	
 	else:
 		raise RuntimeError('Invalid mode!')

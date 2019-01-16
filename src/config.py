@@ -11,64 +11,65 @@
 # IMPORTATION #
 ###############
 import argparse
+from multiprocessing import cpu_count
 
 
 ########################
 # MODEL CONFIGURATIONS #
 ########################
 class configurations(object):
-    
-    def __init__(self):
-    	self.get_audio_config()
-    	self.get_model_config()
-    	self.get_dataloader_config()
-    	self.get_training_config()
-    	self.get_testing_config()
+	
+	def __init__(self):
+		self.get_audio_config()
+		self.get_model_config()
+		self.get_dataloader_config()
+		self.get_training_config()
+		self.get_testing_config()
 
-    def get_audio_config(self):
-    	self.num_mels = 80
-    	self.num_freq = 1025
-    	self.sample_rate = 20000
-    	self.frame_length_ms = 50
-    	self.frame_shift_ms = 12.5
-    	self.preemphasis = 0.97
-    	self.min_level_db = -100
-    	self.ref_level_db = 20
-    	self.hop_length = 250
+	def get_audio_config(self):
+		self.num_mels = 80
+		self.num_freq = 1025
+		self.sample_rate = 20000
+		self.frame_length_ms = 50
+		self.frame_shift_ms = 12.5
+		self.preemphasis = 0.97
+		self.min_level_db = -100
+		self.ref_level_db = 20
+		self.hop_length = 250
 
-    def get_model_config(self):
-    	self.embedding_dim = 256
-    	self.outputs_per_step = 5
-    	self.padding_idx = None
-    	self.use_memory_mask = False
+	def get_model_config(self):
+		self.embedding_dim = 256
+		self.outputs_per_step = 5
+		self.padding_idx = None
+		self.use_memory_mask = False
 
-    def get_dataloader_config(self):
-    	self.pin_memory = True
-    	self.num_workers = 2
+	def get_dataloader_config(self):
+		self.pin_memory = True
+		self.num_workers = 2
 
-    def get_training_config(self):
-    	self.batch_size = 16
-    	self.adam_beta1 = 0.9
-    	self.adam_beta2 = 0.999
-    	self.initial_learning_rate = 0.002
-    	self.decay_learning_rate = True
-    	self.nepochs = 1000
-    	self.weight_decay = 0.0
-    	self.clip_thresh = 1.0
-    	self.checkpoint_interval = 2000
+	def get_training_config(self):
+		self.batch_size = 16
+		self.adam_beta1 = 0.9
+		self.adam_beta2 = 0.999
+		self.initial_learning_rate = 0.002
+		self.decay_learning_rate = True
+		self.nepochs = 1000
+		self.weight_decay = 0.0
+		self.clip_thresh = 1.0
+		self.checkpoint_interval = 2000
 
-    def get_testing_config(self):
-    	self.max_iters = 200
-    	self.griffin_lim_iters = 60
-    	self.power = 1.5 # Power to raise magnitudes to prior to Griffin-Lim
+	def get_testing_config(self):
+		self.max_iters = 200
+		self.griffin_lim_iters = 60
+		self.power = 1.5 # Power to raise magnitudes to prior to Griffin-Lim
 
-args = configurations()
+config = configurations()
 
 
 ###########################
 # TRAINING CONFIGURATIONS #
 ###########################
-def get_training_config():
+def get_training_args():
 	parser = argparse.ArgumentParser(description='arguments')
 
 	parser.add_argument('--checkpoint_dir', type=str, default='../ckpt', help='Directory where to save model checkpoints')
@@ -76,14 +77,14 @@ def get_training_config():
 	parser.add_argument('--data_root', type=str, default='../data/meta', help='Directory contains preprocessed features')
 	parser.add_argument('--meta_text', type=str, default='meta_text.txt', help='model-ready training transcripts')
 
-	config = parser.parse_args()
-	return config
+	args = parser.parse_args()
+	return args
 
 
 #############################
 # PREPROCESS CONFIGURATIONS #
 #############################
-def get_preprocess_config():
+def get_preprocess_args():
 	parser = argparse.ArgumentParser(description='preprocess')
 
 	parser.add_argument('--mode', choices=['text', 'audio', 'model_ready', 'analysis', 'all'], default='all', help='what to preprocess')
@@ -114,18 +115,19 @@ def get_preprocess_config():
 	output_path.add_argument('--text_output_test_path', type=str, default='test.txt', help='path to the processed testing text data')
 	output_path.add_argument('--all_text_output_path', type=str, default='train_all.txt', help='path to the joint processed text data')
 
-	config = parser.parse_args()
-	return config
+	args = parser.parse_args()
+	return args
 
 
 #######################
 # TEST CONFIGURATIONS #
 #######################
-def get_test_config():
+def get_test_args():
 	parser = argparse.ArgumentParser(description='preprocess')
 
 	parser.add_argument('--plot', type=bool, default=True, help='whether to plot')
 	parser.add_argument('--long_input', type=bool, default=True, help='whether to set the model for long input')
+	parser.add_argument('--interactive', type=bool, default=True, help='whether to test in an interactive mode')
 
 	path_parser = parser.add_argument_group('path')
 	path_parser.add_argument('--result_dir', type=str, default='../result/', help='path to output test results')
@@ -133,6 +135,6 @@ def get_test_config():
 	path_parser.add_argument('--checkpoint_name', type=str, default='checkpoint_step', help='model name prefix for checkpoint files')
 	path_parser.add_argument('--model', type=str, default='276000', help='model step name for checkpoint files')
 	
-	config = parser.parse_args()
-	return config
+	args = parser.parse_args()
+	return args
 

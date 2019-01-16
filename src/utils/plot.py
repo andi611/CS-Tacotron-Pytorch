@@ -13,7 +13,7 @@
 import numpy as np
 import librosa.display
 from utils import audio
-from config import args
+from config import config
 import matplotlib.pyplot as plt
 plt.switch_backend('agg')
 
@@ -21,11 +21,34 @@ plt.switch_backend('agg')
 #############
 # CONSTANTS #
 #############
-fs = args.sample_rate
-win = args.frame_length_ms
-hop = args.frame_shift_ms
-nfft = (args.num_freq - 1) * 2
-hop_length = args.hop_length
+fs = config.sample_rate
+win = config.frame_length_ms
+hop = config.frame_shift_ms
+nfft = (config.num_freq - 1) * 2
+hop_length = config.hop_length
+
+
+############################
+# PREPROCESS VISUALIZATION #
+############################
+"""
+	visualize the preprocessed waveforms
+"""
+def preprocess_visualization(name, y, yt, sr, output_dir, visualization_dir, vis_process):
+	#---visualization---#
+	plt.figure(figsize=(16, 4))
+	if vis_process:
+		plt.subplot(2, 1, 1)
+		librosa.display.waveplot(yt, sr=sr, color='r')
+		plt.title('Processed Waveform')
+		plt.subplot(2, 1, 2)
+	librosa.display.waveplot(y, sr=sr, color='tab:orange')
+	plt.title('Original Waveform')
+	plt.tight_layout()
+
+	#---save---#
+	plt.savefig(visualization_dir + name + '.jpeg')
+	plt.close()
 
 
 ##################

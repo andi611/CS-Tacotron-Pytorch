@@ -42,7 +42,7 @@ import torch.backends.cudnn as cudnn
 from torch.utils import data as data_utils
 #----------------------------------------#
 from model.tacotron import Tacotron
-from config import args, get_training_config
+from config import config, get_training_args
 #----------------------------------------#
 from nnmnkwii.datasets import FileSourceDataset, FileDataSource
 from tensorboardX import SummaryWriter
@@ -58,11 +58,11 @@ global_epoch = 0
 USE_CUDA = torch.cuda.is_available()
 if USE_CUDA:
 	cudnn.benchmark = False
-config = get_training_config()
-if config.data_root != None:
-	DATA_ROOT = config.data_root
-if config.meta_text != None:
-	META_TEXT = config.meta_text
+args = get_training_args()
+if args.data_root != None:
+	DATA_ROOT = args.data_root
+if args.meta_text != None:
+	META_TEXT = args.meta_text
 
 
 def _pad(seq, max_len):
@@ -131,7 +131,7 @@ class PyTorchDataset(object):
 
 def collate_fn(batch):
 	"""Create batch"""
-	r = args.outputs_per_step
+	r = config.outputs_per_step
 	input_lengths = [len(x[0]) for x in batch]
 	max_input_len = np.max(input_lengths)
 	# Add single zeros frame at least, so plus 1
@@ -274,7 +274,7 @@ def train(model,
 			duration = time.time() - start
 			if global_step % 5 == 0:
 				log = '[{}] total_loss: {:.3f}. mel_loss: {:.3f}, mag_loss: {:.3f}, grad_norm: {:.3f}, lr: {:.5f}, time: {:.2f}s'.format(global_step, loss.item(), mel_loss.item(), linear_loss.item(), grad_norm, current_lr, duration)
-				print(log)
+				print(log, end='\r')
 
 			global_step += 1
 			running_loss += loss.item()
@@ -301,8 +301,8 @@ def save_checkpoint(model, optimizer, step, checkpoint_dir, epoch):
 
 def main():
 
-	checkpoint_dir = config.checkpoint_dir
-	checkpoint_path = config.checkpoint_path
+	checkpoint_dir = args.checkpoint_dir
+	checkpoint_path = args.checkpoint_path
 	os.makedirs(checkpoint_dir, exist_ok=True)
 
 	# Input dataset definitions
@@ -313,25 +313,25 @@ def main():
 	# Dataset and Dataloader setup
 	dataset = PyTorchDataset(X, Mel, Y)
 	data_loader = data_utils.DataLoader(
-		dataset, batch_size=args.batch_size,
-		num_workers=args.num_workers, shuffle=True,
-		collate_fn=collate_fn, pin_memory=args.pin_memory)
+		dataset, batch_size=config.batch_size,
+		num_workers=config.num_workers, shuffle=True,
+		collate_fn=collate_fn, pin_memory=config.pin_memory)
 
 	# Model
 	model = Tacotron(n_vocab=len(symbols),
-					 embedding_dim=args.embedding_dim,
-					 mel_dim=args.num_mels,
-					 linear_dim=args.num_freq,
-					 r=args.outputs_per_step,
-					 padding_idx=args.padding_idx,
-					 use_memory_mask=args.use_memory_mask,)
+					 embedding_dim=config.embedding_dim,
+					 mel_dim=config.num_mels,
+					 linear_dim=config.num_freq,
+					 r=config.outputs_per_step,
+					 padding_idx=config.padding_idx,
+					 use_memory_mask=config.use_memory_mask,)
 	if USE_CUDA:
 		model = model.cuda()
 
 	optimizer = optim.Adam(model.parameters(),
-						   lr=args.initial_learning_rate, 
-						   betas=(args.adam_beta1, args.adam_beta2),
-						   weight_decay=args.weight_decay)
+						   lr=config.initial_learning_rate, 
+						   betas=(config.adam_beta1, config.adam_beta2),
+						   weight_decay=config.weight_decay)
 
 	# Load checkpoint
 	if checkpoint_path != None:
@@ -353,13 +353,14 @@ def main():
 	# Train!
 	try:
 		train(model, data_loader, optimizer,
-			  init_lr=args.initial_learning_rate,
+			  init_lr=config.initial_learning_rate,
 			  checkpoint_dir=checkpoint_dir,
-			  checkpoint_interval=args.checkpoint_interval,
-			  nepochs=args.nepochs,
-			  clip_thresh=args.clip_thresh,
-			  sample_rate=args.sample_rate)
+			  checkpoint_interval=config.checkpoint_interval,
+			  nepochs=config.nepochs,
+			  clip_thresh=config.clip_thresh,
+			  sample_rate=config.sample_rate)
 	except KeyboardInterrupt:
+		print()
 		pass
 
 	print("Finished")
