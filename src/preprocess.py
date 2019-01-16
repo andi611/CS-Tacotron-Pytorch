@@ -127,10 +127,10 @@ def process_pinyin(meta_path, text_dir, all_text_output_path, text_input_file_li
 #############
 # MAKE META #
 #############
-def make_meta(train_all_meta_path, input_wav_dir, meta_audio_dir, num_workers, frame_shift_ms):
+def make_meta(train_all_meta_path, input_wav_dir, meta_audio_dir, meta_text, num_workers, frame_shift_ms):
 	os.makedirs(meta_audio_dir, exist_ok=True)
 	metadata = utils.build_from_path(train_all_meta_path, input_wav_dir, meta_audio_dir, num_workers, tqdm=tqdm)
-	utils.write_meta_data(metadata, meta_audio_dir, frame_shift_ms)
+	utils.write_meta_data(metadata, meta_audio_dir, meta_text, frame_shift_ms)
 
 
 ####################
@@ -207,7 +207,7 @@ def main():
 
 	#---preprocess text and data to be model ready---#
 	elif config.mode == 'all' or config.mode == 'model_ready':
-		make_meta(config.train_all_meta_path, config.audio_output_dir, config.meta_audio_dir, config.num_workers, args.frame_shift_ms)
+		make_meta(config.train_all_meta_path, config.audio_output_dir, config.meta_audio_dir, config.meta_text, config.num_workers, args.frame_shift_ms)
 
 	#---dataset analysis---#
 	elif config.mode == 'all' or config.mode == 'analysis':

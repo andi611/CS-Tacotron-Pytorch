@@ -144,8 +144,8 @@ def check(input_dir, output_dir, file_suffix='*.wav'):
 		print('Audio pre-processing complete!')
 
 
-def write_meta_data(metadata, out_dir, frame_shift_ms):
-	with open(os.path.join(out_dir, 'meta_text.txt'), 'w', encoding='utf-8') as f:
+def write_meta_data(metadata, out_dir, meta_text, frame_shift_ms):
+	with open(os.path.join(out_dir, meta_text), 'w', encoding='utf-8') as f:
 		for m in metadata:
 			f.write('|'.join([str(x) for x in m]) + '\n')
 		frames = sum([m[2] for m in metadata])

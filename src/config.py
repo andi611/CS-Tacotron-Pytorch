@@ -74,7 +74,7 @@ def get_training_config():
 	parser.add_argument('--checkpoint_dir', type=str, default='../ckpt', help='Directory where to save model checkpoints')
 	parser.add_argument('--checkpoint_path', type=str, default=None, help='Restore model from checkpoint path if given')
 	parser.add_argument('--data_root', type=str, default='../data/meta', help='Directory contains preprocessed features')
-	parser.add_argument('--meta_text', type=str, default='meta_text.txt', help='model-ready training text data')
+	parser.add_argument('--meta_text', type=str, default='meta_text.txt', help='model-ready training transcripts')
 
 	config = parser.parse_args()
 	return config
@@ -90,7 +90,8 @@ def get_preprocess_config():
 	parser.add_argument('--num_workers', type=int, default=cpu_count(), help='multi-thread processing')
 
 	meta_path = parser.add_argument_group('meta_path')
-	meta_path.add_argument('--meta_audio_dir', type=str, default='../data/meta/', help='path to the model ready training acoustic features')
+	meta_path.add_argument('--meta_audio_dir', type=str, default='../data/meta/', help='path to the model-ready training acoustic features')
+	meta_path.add_argument('--meta_text', type=str, default='meta_text.txt', help='name of the model-ready training transcripts')
 	
 	audio_path = parser.add_argument_group('audio_path')
 	audio_path.add_argument('--audio_input_dir', type=str, default='../data/audio/original/', help='directory path to the original audio data')

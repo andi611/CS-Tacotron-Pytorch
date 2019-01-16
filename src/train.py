@@ -11,10 +11,10 @@
 	Usage: train.py [options]
 
 	Options:
-		--data-root=<dir>         Directory contains preprocessed features.
-		--checkpoint-dir=<dir>    Directory where to save model checkpoints [default: checkpoints].
-		--checkpoint-path=<name>  Restore model from checkpoint path if given.
-		--hparams=<parmas>        Hyper parameters [default: ].
+		--checkpoint_dir <dir>    Directory where to save model checkpoints [default: checkpoints].
+		--checkpoint_path <name>  Restore model from checkpoint path if given.
+		--data_root <dir>         Directory contains preprocessed features.
+		--meta_text <name>        Name of the model-ready training transcript.
 		-h, --help                Show this help message and exit
 """
 
@@ -31,7 +31,7 @@ import numpy as np
 import librosa.display
 #----------------------------------------#
 from utils import audio
-from utils.plot import plot_alignment
+from utils.plot import plot_alignment, plot_spectrogram
 from utils.text import text_to_sequence, symbols
 #----------------------------------------#
 import torch
