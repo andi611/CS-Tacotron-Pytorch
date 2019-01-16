@@ -56,8 +56,8 @@ def get_mapper(path):
 # HIGH PASS FILTER #
 ####################
 def _highpass_filter(y, sr):
-	filter_stop_freq = 100  # Hz
-	filter_pass_freq = 300  # Hz
+	filter_stop_freq = 50   # Hz
+	filter_pass_freq = 200  # Hz
 	filter_order = 1001
 
 	# High-pass filter
@@ -84,7 +84,7 @@ def _match_target_amplitude(wav, suffix='wav', target_dBFS=-10.0):
 ##########################
 # APPLY AUDIO PREPROCESS#
 ##########################
-def apply_audio_preprocess(wav, target_dBFS, file_suffix, output_dir, visualization_dir, vis_process)
+def apply_audio_preprocess(wav, target_dBFS, file_suffix, output_dir, visualization_dir, vis_process):
 	y, sr = librosa.load(wav)
 	yt = _highpass_filter(y, sr)
 

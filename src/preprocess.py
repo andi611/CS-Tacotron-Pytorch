@@ -17,7 +17,8 @@ import librosa
 import argparse
 import numpy as np
 from tqdm import tqdm
-from utils import utils
+from utils import data
+from functools import partial
 from pypinyin import Style, pinyin
 from config import config, get_preprocess_args
 from concurrent.futures import ProcessPoolExecutor
@@ -92,15 +93,18 @@ def process_audio(input_dir, output_dir, visualization_dir, target_dBFS,
 	if vis_origin:
 		for wav in wavs:
 			y, sr = librosa.load(wav)
-			utils.visualization(wav.split('/')[-1].split('.')[0], y, None, sr, output_dir, visualization_dir, vis_process=False)
+			data.visualization(wav.split('/')[-1].split('.')[0], y, None, sr, output_dir, visualization_dir, vis_process=False)
 	
 	else:
 		executor = ProcessPoolExecutor(max_workers=num_workers)
 		futures = []
 
 		for i, wav in enumerate(tqdm(wavs)):
+			if i == 0: 
+				y, sr = librosa.load(wav)
+				print('Sample rate: ', sr)
 			if i + 1 >= start_from:
-				futures.append(executor.submit(partial(utils.apply_audio_preprocess, wav, target_dBFS, file_suffix, output_dir, visualization_dir, vis_process)))
+				futures.append(executor.submit(partial(data.apply_audio_preprocess, wav, target_dBFS, file_suffix, output_dir, visualization_dir, vis_process)))
 
 		for future in tqdm(futures): future.result()
 		print('Progress: %i/%i: Complete!' % (len(wavs), len(wavs)))
@@ -138,8 +142,8 @@ def process_pinyin(meta_path, text_dir, all_text_output_path, text_input_file_li
 #############
 def make_meta(train_all_meta_path, input_wav_dir, meta_audio_dir, meta_text, num_workers, frame_shift_ms):
 	os.makedirs(meta_audio_dir, exist_ok=True)
-	metadata = utils.build_from_path(train_all_meta_path, input_wav_dir, meta_audio_dir, num_workers, tqdm=tqdm)
-	utils.write_meta_data(metadata, meta_audio_dir, meta_text, frame_shift_ms)
+	metadata = data.build_from_path(train_all_meta_path, input_wav_dir, meta_audio_dir, num_workers, tqdm=tqdm)
+	data.write_meta_data(metadata, meta_audio_dir, meta_text, frame_shift_ms)
 
 
 ####################
@@ -197,7 +201,7 @@ def main():
 	
 	#---preprocess text---#
 	if args.mode == 'all' or args.mode == 'text':
-		mapper = utils.get_mapper(os.path.join(args.text_dir, args.mapper_path))
+		mapper = data.get_mapper(os.path.join(args.text_dir, args.mapper_path))
 		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_train_path), output_path=os.path.join(args.text_dir, args.text_output_train_path))
 		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_dev_path), output_path=os.path.join(args.text_dir, args.text_output_dev_path))
 		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_test_path), output_path=os.path.join(args.text_dir, args.text_output_test_path))
@@ -215,10 +219,10 @@ def main():
 					  tqdm=tqdm,
 					  vis_process=True, 
 					  vis_origin=False)
-		utils.check(args.audio_input_dir, args.audio_output_dir, file_suffix='*.wav')
+		data.check(args.audio_input_dir, args.audio_output_dir, file_suffix='*.wav')
 
 	#---preprocess text and data to be model ready---#
-	elif args.mode == 'all' or args.mode == 'model_ready':
+	elif args.mode == 'all' or args.mode == 'meta':
 		make_meta(args.train_all_meta_path, args.audio_output_dir, args.meta_audio_dir, args.meta_text, args.num_workers, config.frame_shift_ms)
 
 	#---dataset analysis---#
