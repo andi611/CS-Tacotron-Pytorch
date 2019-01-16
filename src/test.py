@@ -88,44 +88,10 @@ def ch2pinyin(txt_ch):
 	return ' '.join([x[0] for x in ans if x[0] != 'EMPH_A'])
 
 
-def synthesis():
-	config = docopt(__doc__)
-	print("Command line config:\n", config)
-	checkpoint_path = config["<checkpoint>"]
-	text_list_file_path = config["<text_list_file>"]
-	dst_dir = config["<dst_dir>"]
-	max_decoder_steps = int(config["--max-decoder-steps"])
-	file_name_suffix = config["--file-name-suffix"]
+def synthesis(checkpoint_path, text_list_file_path, dst_dir):
 
-	model = Tacotron(n_vocab=len(symbols),
-					 embedding_dim=config.embedding_dim,
-					 mel_dim=config.num_mels,
-					 linear_dim=config.num_freq,
-					 r=config.outputs_per_step,
-					 padding_idx=config.padding_idx,
-					 use_memory_mask=config.use_memory_mask,
-					 )
-	checkpoint = torch.load(checkpoint_path)
-	model.load_state_dict(checkpoint["state_dict"])
-	model.decoder.max_decoder_steps = max_decoder_steps
 
-	os.makedirs(dst_dir, exist_ok=True)
 
-	with open(text_list_file_path, "rb") as f:
-		lines = f.readlines()
-		for idx, line in enumerate(lines):
-			text = line.decode("utf-8")[:-1]
-			words = nltk.word_tokenize(text)
-			print("{}: {} ({} chars, {} words)".format(idx, text, len(text), len(words)))
-			waveform, alignment, _ = tts(model, text)
-			dst_wav_path = os.path.join(dst_dir, "{}{}.wav".format(idx, file_name_suffix))
-			dst_alignment_path = os.path.join(dst_dir, "{}_alignment.png".format(idx))
-			plot_alignment(alignment.T, dst_alignment_path,
-						   info="tacotron, {}".format(checkpoint_path))
-			audio.save_wav(waveform, dst_wav_path)
-
-	print("Finished! Check out {} for generated audio samples.".format(dst_dir))
-	sys.exit(0)
 
 
 ########
@@ -136,28 +102,29 @@ def main():
 	#---initialize---#
 	args = get_test_args()
 
+	model = Tacotron(n_vocab=len(symbols),
+					 embedding_dim=config.embedding_dim,
+					 mel_dim=config.num_mels,
+					 linear_dim=config.num_freq,
+					 r=config.outputs_per_step,
+					 padding_idx=config.padding_idx,
+					 use_memory_mask=config.use_memory_mask)
+
+	#---handle path---#
+	checkpoint_path = args.ckpt_dir + args.checkpoint_name + args.model + '.pth'
+	output_name = args.result_dir + args.model
+	os.makedirs(args.result_dir, exist_ok=True)
+	
+	#---load and set model---#
+	print('Loading model: ', checkpoint_path)
+	checkpoint = torch.load(checkpoint_path)
+	model.load_state_dict(checkpoint["state_dict"])
+	
+	if args.long_input:
+		model.decoder.max_decoder_steps = 500 # Set large max_decoder steps to handle long sentence outputs
+		
 	if args.interactive:
 
-		model = Tacotron(n_vocab=len(symbols),
-						 embedding_dim=config.embedding_dim,
-						 mel_dim=config.num_mels,
-						 linear_dim=config.num_freq,
-						 r=config.outputs_per_step,
-						 padding_idx=config.padding_idx,
-						 use_memory_mask=config.use_memory_mask)
-
-		#---handle path---#
-		checkpoint_path = args.ckpt_dir + args.checkpoint_name + args.model + '.pth'
-		output_name = args.result_dir + args.model
-		os.makedirs(args.result_dir, exist_ok=True)
-		
-		#---load and set model---#
-		print('Loading model: ', checkpoint_path)
-		checkpoint = torch.load(checkpoint_path)
-		model.load_state_dict(checkpoint["state_dict"])
-		if args.long_input:
-			model.decoder.max_decoder_steps = 500 # Set large max_decoder steps to handle long sentence outputs
-		
 		#---testing loop---#
 		while True:
 			try:
@@ -170,7 +137,23 @@ def main():
 				print('Terminating!')
 				break
 	else:
-		synthesis()
+
+		#---testing flow---#
+		with open(args.test_file_path, 'r', encoding='utf-8') as f:
+			
+			lines = f.readlines()
+			for idx, line in enumerate(lines):
+				text = ch2pinyin(line)
+				print("{}: {} - {} ({} words, {} chars)".format(idx, line, text, len(line), len(text)))
+				waveform, alignment, _ = tts(model, text)
+				dst_wav_path = os.path.join(output_name, "{}.wav".format(idx))
+				dst_alignment_path = os.path.join(output_name, "{}_alignment.png".format(idx))
+				plot_alignment(alignment.T, dst_alignment_path, info="tacotron, {}".format(checkpoint_path))
+				audio.save_wav(waveform, dst_wav_path)
+
+		print("Finished! Check out {} for generated audio samples.".format(output_name))
+	
+	sys.exit(0)
 
 if __name__ == "__main__":
 	main()

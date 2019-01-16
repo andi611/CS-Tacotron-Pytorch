@@ -113,23 +113,23 @@ def process_audio(input_dir, output_dir, visualization_dir, target_dBFS,
 ##################
 # PROCESS PINYIN #
 ##################
-def process_pinyin(meta_path, text_dir, all_text_output_path, text_input_file_list):
+def process_pinyin(text_pinyin_path, text_input_raw_path, text_dir, all_text_output_path, text_input_file_list, join=False):
 	
-	all_text = []
-	with open(os.path.join(text_dir, all_text_output_path), 'w', encoding='utf-8') as w:
-		for input_path in text_input_file_list:
-			input_path = os.path.join(text_dir, input_path)
-			with open(input_path, 'r', encoding='utf-8') as r:
-				lines = r.readlines()
-				for line in lines: 
-					w.write(line)
+	if join:
+		with open(os.path.join(text_dir, all_text_output_path), 'w', encoding='utf-8') as w:
+			for input_path in text_input_file_list:
+				input_path = os.path.join(text_dir, input_path)
+				with open(input_path, 'r', encoding='utf-8') as r:
+					lines = r.readlines()
+					for line in lines: 
+						w.write(line)
 
 	def _ch2pinyin(txt_ch):
 		ans = pinyin(txt_ch, style=Style.TONE2, errors=lambda x: x, strict=False)
 		return [x[0] for x in ans if x[0] != 'EMPH_A']
 	
-	with open(meta_path, 'w') as w:
-		with open(os.path.join(text_dir, all_text_output_path), 'r') as r:
+	with open(text_pinyin_path, 'w') as w:
+		with open(text_input_raw_path, 'r') as r:
 			lines = r.readlines()
 			for line in lines:
 				tokens = line[:-1].split(' ')
@@ -140,9 +140,9 @@ def process_pinyin(meta_path, text_dir, all_text_output_path, text_input_file_li
 #############
 # MAKE META #
 #############
-def make_meta(train_all_meta_path, input_wav_dir, meta_audio_dir, meta_text, num_workers, frame_shift_ms):
+def make_meta(text_pinyin_path, input_wav_dir, meta_audio_dir, meta_text, num_workers, frame_shift_ms):
 	os.makedirs(meta_audio_dir, exist_ok=True)
-	metadata = data.build_from_path(train_all_meta_path, input_wav_dir, meta_audio_dir, num_workers, tqdm=tqdm)
+	metadata = data.build_from_path(text_pinyin_path, input_wav_dir, meta_audio_dir, num_workers, tqdm=tqdm)
 	data.write_meta_data(metadata, meta_audio_dir, meta_text, frame_shift_ms)
 
 
@@ -205,7 +205,14 @@ def main():
 		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_train_path), output_path=os.path.join(args.text_dir, args.text_output_train_path))
 		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_dev_path), output_path=os.path.join(args.text_dir, args.text_output_dev_path))
 		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_test_path), output_path=os.path.join(args.text_dir, args.text_output_test_path))
-		process_pinyin(args.train_all_meta_path, args.text_dir, args.all_text_output_path, [args.text_output_train_path, args.text_output_dev_path, args.text_output_test_path])		
+		process_pinyin(args.text_pinyin_path, 
+					   args.text_input_raw_path, 
+					   args.text_dir, 
+					   args.all_text_output_path, 
+					   [args.text_output_train_path, 
+					   args.text_output_dev_path, 
+					   args.text_output_test_path], 
+					   join=args.join)		
 
 	#---preprocess audio---#
 	elif args.mode == 'all' or args.mode == 'audio':
@@ -223,7 +230,7 @@ def main():
 
 	#---preprocess text and data to be model ready---#
 	elif args.mode == 'all' or args.mode == 'meta':
-		make_meta(args.train_all_meta_path, args.audio_output_dir, args.meta_audio_dir, args.meta_text, args.num_workers, config.frame_shift_ms)
+		make_meta(args.text_pinyin_path, args.audio_output_dir, args.meta_audio_dir, args.meta_text, args.num_workers, config.frame_shift_ms)
 
 	#---dataset analysis---#
 	elif args.mode == 'all' or args.mode == 'analysis':

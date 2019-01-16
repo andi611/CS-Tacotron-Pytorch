@@ -90,6 +90,7 @@ def get_preprocess_args():
 
 	parser.add_argument('--mode', choices=['text', 'audio', 'meta', 'analysis', 'all'], default='all', help='what to preprocess')
 	parser.add_argument('--num_workers', type=int, default=cpu_count(), help='multi-thread processing')
+	parser.add_argument('--join', type=bool, default=False, help='whether to join the [train, dev, test] transcripts into one joint transcript')
 
 	meta_path = parser.add_argument_group('meta_path')
 	meta_path.add_argument('--meta_audio_dir', type=str, default='../data/meta/', help='path to the model-ready training acoustic features')
@@ -103,12 +104,13 @@ def get_preprocess_args():
 	text_path = parser.add_argument_group('text_path')
 	text_path.add_argument('--text_dir', type=str, default='../data/text/', help='directory to the text transcripts')
 	text_path.add_argument('--mapper_path', type=str, default='mapper.txt', help='path to the encoding mapper')
+	text_path.add_argument('--text_pinyin_path', type=str, default='../data/text/train_all_pinyin.txt', help='path to the transformed training text transcripts')
 
 	input_path = parser.add_argument_group('text_input_path')
 	input_path.add_argument('--text_input_train_path', type=str, default='train_ori.txt', help='path to the original training text data')
 	input_path.add_argument('--text_input_dev_path', type=str, default='dev_ori.txt', help='path to the original development text data')
 	input_path.add_argument('--text_input_test_path', type=str, default='test_ori.txt', help='path to the original testing text data')
-	input_path.add_argument('--train_all_meta_path', type=str, default='../data/text/train_all_pinyin.txt', help='path to the model ready training text transcripts')
+	input_path.add_argument('--text_input_raw_path', type=str, default='../data/text/train_all.txt', help='path to the raw text transcripts')
 	
 	output_path = parser.add_argument_group('text_output_path')
 	output_path.add_argument('--text_output_train_path', type=str, default='train.txt', help='path to the processed training text data')
@@ -135,6 +137,7 @@ def get_test_args():
 	path_parser.add_argument('--ckpt_dir', type=str, default='../ckpt/', help='path to the directory where model checkpoints are saved')
 	path_parser.add_argument('--checkpoint_name', type=str, default='checkpoint_step', help='model name prefix for checkpoint files')
 	path_parser.add_argument('--model', type=str, default='276000', help='model step name for checkpoint files')
+	path_parser.add_argument('--test_file_path', type=str, default=None, help='path to the input test transcripts')
 	
 	args = parser.parse_args()
 	return args
