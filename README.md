@@ -46,7 +46,7 @@ Pull requests are welcome!
 
 	After unpacking, your data tree should look like this for the default paths to work:
 	```
-	root
+	./CS-Tacotron
 	 |- data
 		 |- text
 		 	|- train_sample.txt
@@ -58,23 +58,23 @@ Pull requests are welcome!
 
 *Note: For the following section, set the paths according to the file names of your dataset, this is just a demonstration of some sample data. The format of your dataset should match the provided sample data for this code to work.*
 
-3. **Preprocess the text data:**
+3. **Preprocess the text data using [src/preprocess.py](src/preprocess.py):**
 	```
 	python3 preprocess.py --mode text --text_input_raw_path ../data/text/train_sample.txt --text_pinyin_path '../data/text/train_sample_pinyin.txt'
 	```
 
 
-4. **Preprocess the audio data:**
+4. **Preprocess the audio data using [src/preprocess.py](src/preprocess.py):**
 	```
 	python3 preprocess.py --mode audio --audio_input_dir ../data/audio/sample/
 	```
 
-5. **Make model-ready meta files from text and audio:**
+5. **Make model-ready meta files from text and audio using [src/preprocess.py](src/preprocess.py):**
 	```
 	python3 preprocess.py --mode meta --text_pinyin_path ../data/text/train_sample_pinyin.txt --audio_output_dir ../data/audio/sample_processed/ --visualization_dir ../data/audio/sample_visualization/
 	```
 
-5. **Train a model**
+5. **Train a model using [src/train.py](src/train.py)**
 	```
 	python3 train.py
 	```
@@ -83,23 +83,13 @@ Pull requests are welcome!
 	The default hyperparameters are recommended for LectureDSP and other Chinese-English code switching data.
 
 
-5. **Monitor with TensorboardX** (optional)
+6. **Monitor with TensorboardX** (optional)
 	```
-	tensorboardX --logdir ~/tacotron/logs-tacotron
+	tensorboardX --logdir 'path to log'
 	```
 
-	The trainer dumps audio and alignments every 1000 steps. You can find these in
-	`~/tacotron/logs-tacotron`.
+	The trainer dumps audio and alignments every 2000 steps by default. You can find these in `CS-tacotron/ckpt`.
 
 
-## Notes and Common Issues
-
-  * [TCMalloc](http://goog-perftools.sourceforge.net/doc/tcmalloc.html) seems to improve
-	training speed and avoids occasional slowdowns seen with the default allocator. You
-	can enable it by installing it and setting `LD_PRELOAD=/usr/lib/libtcmalloc.so`. With TCMalloc,
-	you can get around 1.1 sec/step on a GTX 1080Ti.
-
-
-## Other Implementations
-  * By Alex Barron: https://github.com/barronalex/Tacotron
-  * By Kyubyong Park: https://github.com/Kyubyong/tacotron
+## Acknowledgement
+We would like to give credit to the [work](https://github.com/r9y9/tacotron_pytorch) of Ryuichi Yamamoto, a wonderful Pytorch implementation of Tacotron, which we mainly based our work on.
