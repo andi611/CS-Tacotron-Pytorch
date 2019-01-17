@@ -234,9 +234,9 @@ def save_checkpoint(model, optimizer, step, checkpoint_dir, epoch):
 	One step of training: Train a single batch of data on Tacotron
 """
 def tacotron_step(model, optimizer, criterion,
-			 	  x, input_lengths, mel, y,
-			 	  init_lr, sample_rate, clip_thresh,
-			 	  running_loss, data_len, global_step):
+				  x, input_lengths, mel, y,
+				  init_lr, sample_rate, clip_thresh,
+				  running_loss, data_len, global_step):
 	
 	#---decay learning rate---#
 	current_lr = _learning_rate_decay(init_lr, global_step)
@@ -321,14 +321,14 @@ def train(model,
 		for x, input_lengths, mel, y in data_loader:
 			
 			model, optimizer, Rs = tacotron_step(model, optimizer, criterion,
-			 	  					   			 x, input_lengths, mel, y,
-			 	  					   			 init_lr, sample_rate, clip_thresh,
-			 	  					   			 running_loss, len(data_loader), global_step)
-		   
-		    mel_outputs = Ms['mel_outputs']
-		    linear_outputs = Ms['linear_outputs']
-		    attn = Ms['attn']
-		    sorted_lengths = Ms['sorted_lengths']
+												 x, input_lengths, mel, y,
+												 init_lr, sample_rate, clip_thresh,
+												 running_loss, len(data_loader), global_step)
+
+			mel_outputs = Ms['mel_outputs']
+			linear_outputs = Ms['linear_outputs']
+			attn = Ms['attn']
+			sorted_lengths = Ms['sorted_lengths']
 			grad_norm = Ms['grad_norm']
 			current_lr = Ms['current_lr']
 
