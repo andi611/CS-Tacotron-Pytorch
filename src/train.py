@@ -235,7 +235,7 @@ def save_checkpoint(model, optimizer, step, checkpoint_dir, epoch):
 """
 def tacotron_step(model, optimizer, criterion,
 			 	  x, input_lengths, mel, y,
-			 	  init_lr, sample_rate,
+			 	  init_lr, sample_rate, clip_thresh,
 			 	  running_loss, global_step):
 	
 	#---decay learning rate---#
@@ -269,10 +269,10 @@ def tacotron_step(model, optimizer, criterion,
 	linear_L = linear_loss.item()
 
 	#---wrap up losses---#
-	Ls = {'total_L': total_L,
-		  'avg_L' : avg_L,
-		  'mel_L' : mel_L,
-		  'linear_L' : linear_L}
+	Ls = { 'total_L': total_L,
+		   'avg_L' : avg_L,
+		   'mel_L' : mel_L,
+		   'linear_L' : linear_L }
 
 	#---update model---#
 	loss.backward()
@@ -315,7 +315,7 @@ def train(model,
 			
 			model, optimizer, Ls = tacotron_step(model, optimizer, criterion,
 			 	  					   			 x, input_lengths, mel, y,
-			 	  					   			 init_lr, sample_rate,
+			 	  					   			 init_lr, sample_rate, clip_thresh,
 			 	  					   			 running_loss, global_step)
 
 			total_L = Ls['total_L']
