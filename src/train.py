@@ -273,15 +273,20 @@ def tacotron_step(model, optimizer, criterion,
 	grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), clip_thresh)
 	optimizer.step()
 
-	#---wrap up losses---#
-	Rs = { 'total_L': total_L,
-		   'avg_L' : avg_L,
-		   'mel_L' : mel_L,
-		   'linear_L' : linear_L, 
+	#---wrap up returns---#
+	Ms = { 'mel_outputs' : mel_outputs, 
+		   'linear_outputs' : linear_outputs,
+		   'attn' : attn,
+		   'sorted_lengths' : sorted_lengths,
 		   'grad_norm' : grad_norm,
 		   'current_lr' : current_lr }
+	Ls = { 'total_L': total_L,
+		   'avg_L' : avg_L,
+		   'mel_L' : mel_L,
+		   'linear_L' : linear_L }
 
-	return model, optimizer, Rs
+
+	return model, optimizer, Ms, Ls
 
 
 #########
@@ -319,20 +324,25 @@ def train(model,
 			 	  					   			 x, input_lengths, mel, y,
 			 	  					   			 init_lr, sample_rate, clip_thresh,
 			 	  					   			 running_loss, len(data_loader), global_step)
+		   
+		    mel_outputs = Ms['mel_outputs']
+		    linear_outputs = Ms['linear_outputs']
+		    attn = Ms['attn']
+		    sorted_lengths = Ms['sorted_lengths']
+			grad_norm = Ms['grad_norm']
+			current_lr = Ms['current_lr']
 
 			total_L = Rs['total_L']
 			avg_L = Rs['avg_L']
 			mel_L = Rs['mel_L']
 			linear_L = Rs['linear_L']
-			grad_norm = Rs['grad_norm']
-			current_lr = Rs['current_lr']
 
 			duration = time.time() - start
 			if global_step > 0 and global_step % checkpoint_interval == 0:
-				save_states(global_step, mel_outputs, linear_outputs, attn, y, orted_lengths, checkpoint_dir)
+				save_states(global_step, mel_outputs, linear_outputs, attn, y, sorted_lengths, checkpoint_dir)
 				save_checkpoint(model, optimizer, global_step, checkpoint_dir, global_epoch)
 				log = '[{}] total_L: {:.3f}, avg_L: {:.3f}, mel_L: {:.3f}, mag_L: {:.3f}, grad_norm: {:.3f}, lr: {:.5f}, t: {:.2f}s, saved: T'.format(global_step, total_L, avg_L, mel_L, linear_L, grad_norm, current_lr, duration)
-				print(log, end='\r')
+				print(log)
 			elif global_step % 5 == 0:
 				log = '[{}] total_L: {:.3f}, avg_L: {:.3f}, mel_L: {:.3f}, mag_L: {:.3f}, grad_norm: {:.3f}, lr: {:.5f}, t: {:.2f}s, saved: F'.format(global_step, total_L, avg_L, mel_L, linear_L, grad_norm, current_lr, duration)
 				print(log, end='\r')
