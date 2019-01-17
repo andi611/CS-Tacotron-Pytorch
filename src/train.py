@@ -329,10 +329,10 @@ def train(model,
 			if global_step > 0 and global_step % checkpoint_interval == 0:
 				save_states(global_step, mel_outputs, linear_outputs, attn, y, orted_lengths, checkpoint_dir)
 				save_checkpoint(model, optimizer, global_step, checkpoint_dir, global_epoch)
-				log = '[{}] total_L: {:.3f}, avg_L: {:.3f}, mel_L: {:.3f}, mag_L: {:.3f}, grad_norm: {:.3f}, lr: {:.5f}, t: {:.2f}s, saved: T'.format(global_step, total_loss, avg_L, mel_L, linear_L, grad_norm, current_lr, duration)
+				log = '[{}] total_L: {:.3f}, avg_L: {:.3f}, mel_L: {:.3f}, mag_L: {:.3f}, grad_norm: {:.3f}, lr: {:.5f}, t: {:.2f}s, saved: T'.format(global_step, total_L, avg_L, mel_L, linear_L, grad_norm, current_lr, duration)
 				print(log, end='\r')
 			elif global_step % 5 == 0:
-				log = '[{}] total_L: {:.3f}, avg_L: {:.3f}, mel_L: {:.3f}, mag_L: {:.3f}, grad_norm: {:.3f}, lr: {:.5f}, t: {:.2f}s, saved: F'.format(global_step, total_loss, avg_L, mel_L, linear_L, grad_norm, current_lr, duration)
+				log = '[{}] total_L: {:.3f}, avg_L: {:.3f}, mel_L: {:.3f}, mag_L: {:.3f}, grad_norm: {:.3f}, lr: {:.5f}, t: {:.2f}s, saved: F'.format(global_step, total_L, avg_L, mel_L, linear_L, grad_norm, current_lr, duration)
 				print(log, end='\r')
 
 			# Logs
