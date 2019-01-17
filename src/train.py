@@ -268,16 +268,17 @@ def tacotron_step(model, optimizer, criterion,
 	mel_L = mel_loss.item()
 	linear_L = linear_loss.item()
 
-	#---wrap up losses---#
-	Ls = { 'total_L': total_L,
-		   'avg_L' : avg_L,
-		   'mel_L' : mel_L,
-		   'linear_L' : linear_L }
-
 	#---update model---#
 	loss.backward()
 	grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), clip_thresh)
 	optimizer.step()
+
+	#---wrap up losses---#
+	Ls = { 'total_L': total_L,
+		   'avg_L' : avg_L,
+		   'mel_L' : mel_L,
+		   'linear_L' : linear_L 
+		   'grad_norm' : grad_norm}
 
 	return model, optimizer, Ls
 
