@@ -274,13 +274,14 @@ def tacotron_step(model, optimizer, criterion,
 	optimizer.step()
 
 	#---wrap up losses---#
-	Ls = { 'total_L': total_L,
+	Rs = { 'total_L': total_L,
 		   'avg_L' : avg_L,
 		   'mel_L' : mel_L,
 		   'linear_L' : linear_L, 
-		   'grad_norm' : grad_norm }
+		   'grad_norm' : grad_norm,
+		   'current_lr' : current_lr }
 
-	return model, optimizer, Ls
+	return model, optimizer, Rs
 
 
 #########
@@ -314,16 +315,17 @@ def train(model,
 		
 		for x, input_lengths, mel, y in data_loader:
 			
-			model, optimizer, Ls = tacotron_step(model, optimizer, criterion,
+			model, optimizer, Rs = tacotron_step(model, optimizer, criterion,
 			 	  					   			 x, input_lengths, mel, y,
 			 	  					   			 init_lr, sample_rate, clip_thresh,
 			 	  					   			 running_loss, len(data_loader), global_step)
 
-			total_L = Ls['total_L']
-			avg_L = Ls['avg_L']
-			mel_L = Ls['mel_L']
-			linear_L = Ls['linear_L']
-			grad_norm = Ls['grad_norm']
+			total_L = Rs['total_L']
+			avg_L = Rs['avg_L']
+			mel_L = Rs['mel_L']
+			linear_L = Rs['linear_L']
+			grad_norm = Rs['grad_norm']
+			current_lr = Rs['current_lr']
 
 			duration = time.time() - start
 			if global_step > 0 and global_step % checkpoint_interval == 0:
