@@ -320,7 +320,7 @@ def train(model,
 		
 		for x, input_lengths, mel, y in data_loader:
 			
-			model, optimizer, Rs = tacotron_step(model, optimizer, criterion,
+			model, optimizer, Ms, Rs = tacotron_step(model, optimizer, criterion,
 												 x, input_lengths, mel, y,
 												 init_lr, sample_rate, clip_thresh,
 												 running_loss, len(data_loader), global_step)
