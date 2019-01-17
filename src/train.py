@@ -419,7 +419,7 @@ def main():
 
 	# Train!
 	try:
-		train(model, optimizer, data_loader, args.summary_comment
+		train(model, optimizer, data_loader, args.summary_comment,
 			  init_lr=config.initial_learning_rate,
 			  checkpoint_dir=checkpoint_dir,
 			  checkpoint_interval=config.checkpoint_interval,
