@@ -415,7 +415,7 @@ def main():
 	checkpoint_path = args.checkpoint_path
 	os.makedirs(checkpoint_dir, exist_ok=True)
 
-	model, optimizer, dataLoader = initialize_training(checkpoint_path)
+	model, optimizer, data_loader = initialize_training(checkpoint_path)
 
 	# Train!
 	try:
