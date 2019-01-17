@@ -235,7 +235,8 @@ def save_checkpoint(model, optimizer, step, checkpoint_dir, epoch):
 """
 def tacotron_step(model, optimizer, criterion,
 			 	  x, input_lengths, mel, y,
-			 	  init_lr, running_loss, global_step):
+			 	  init_lr, sample_rate,
+			 	  running_loss, global_step):
 	
 	#---decay learning rate---#
 	current_lr = _learning_rate_decay(init_lr, global_step)
@@ -314,7 +315,8 @@ def train(model,
 			
 			model, optimizer, Ls = tacotron_step(model, optimizer, criterion,
 			 	  					   			 x, input_lengths, mel, y,
-			 	  					   			 init_lr, running_loss, global_step)
+			 	  					   			 init_lr, sample_rate,
+			 	  					   			 running_loss, global_step)
 
 			total_L = Ls['total_L']
 			avg_L = Ls['avg_L']
