@@ -277,8 +277,8 @@ def tacotron_step(model, optimizer, criterion,
 	Ls = { 'total_L': total_L,
 		   'avg_L' : avg_L,
 		   'mel_L' : mel_L,
-		   'linear_L' : linear_L 
-		   'grad_norm' : grad_norm}
+		   'linear_L' : linear_L, 
+		   'grad_norm' : grad_norm }
 
 	return model, optimizer, Ls
 
