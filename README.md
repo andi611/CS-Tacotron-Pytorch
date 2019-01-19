@@ -73,7 +73,8 @@ Pull requests are welcome!
 	python3 preprocess.py --mode audio --audio_input_dir ../data/audio/sample/
 	```
 	Visualization of the audio preprocess differences:
-	![](https://github.com/andi611/CS-Tacotron/blob/master/image/preprocessing.jpeg)
+	![](https://i.imgur.com/aqqJwtB.jpg)
+	[Imgur](https://i.imgur.com/aqqJwtB.jpg)
 
 5. **Make model-ready meta files from text and audio using [src/preprocess.py](src/preprocess.py):**
 	```
