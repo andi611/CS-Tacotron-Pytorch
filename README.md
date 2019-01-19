@@ -72,9 +72,8 @@ Pull requests are welcome!
 	```
 	python3 preprocess.py --mode audio --audio_input_dir ../data/audio/sample/
 	```
-	Visualization of the audio preprocess differences:
+	[Visualization](https://i.imgur.com/aqqJwtB.jpg) of the audio preprocess differences:
 	![](https://i.imgur.com/aqqJwtB.jpg)
-	[Imgur](https://i.imgur.com/aqqJwtB.jpg)
 
 5. **Make model-ready meta files from text and audio using [src/preprocess.py](src/preprocess.py):**
 	```
@@ -103,4 +102,4 @@ We would like to give credit to the [work](https://github.com/r9y9/tacotron_pyto
 
 ## Alignment
 We show the alignment plot of our model’s testing phase, where the first shows the alignment of monolingual Chinese input, the second is Chinese-English code-switching input, and the third is monolingual English input, respectively.
-<img src="https://github.com/andi611/CS-Tacotron/blob/master/image/alignment_2.png" width="645" height="775">
+<img src="https://i.imgur.com/OSgJvvf.png">
