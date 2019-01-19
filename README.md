@@ -102,4 +102,4 @@ We would like to give credit to the [work](https://github.com/r9y9/tacotron_pyto
 
 ## Alignment
 We show the alignment plot of our model’s testing phase, where the first shows the alignment of monolingual Chinese input, the second is Chinese-English code-switching input, and the third is monolingual English input, respectively.
-<img src="https://i.imgur.com/OSgJvvf.png">
+<img src="https://i.imgur.com/OSgJvvf.png" width="645" height="775">
