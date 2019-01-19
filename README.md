@@ -1,10 +1,12 @@
 # CS-Tacotron
-An Pytorch implementation of CS-Tacotron, a code-switching speech synthesis end-to-end generative TTS model.  
+A Pytorch implementation of CS-Tacotron, a code-switching speech synthesis end-to-end generative TTS model based on Tacotron.  
 
 ## Introduction
-With the wide success of recent machine learning Text-to-speech (TTS) models, promising results on synthesizing realistic speech have proven machine’s capability of synthesizing human-like voices. However, little progress has been made in the domain of Chinese-English code-switching text-to-speech synthesis, where machine has to learn to handle both input and output in a multilingual fashion. In this work, we present Code-Switch Tacotron, which is built based on the state-of-the-art end-to-end text-to-speech generative model Tacotron (Wang et al., 2017). CS-Tacotron is capable of synthesizing code-switching speech conditioned on raw CS text. Given CS text and audio pairs, our model can be trained end-to-end with proper data pre-processing. Furthurmore, we train our model on the LectureDSP dataset, a Chinese-English code-switching lecture-based dataset, which originates from the course Digital Signal Processing (DSP) offered in National Taiwan University (NTU). We present several key implementation techniques to make the Tacotron model perform well on this challenging multilingual speech generation task. CS-Tacotron possess the capability of generating CS speech from CS text, and speaks vividly with the style of LectureDSP’s speaker.
+With the wide success of recent machine learning Text-to-speech (TTS) models, promising results on synthesizing realistic speech have proven machine’s capability of synthesizing human-like voices. However, little progress has been made in the domain of Chinese-English code-switching text-to-speech synthesis, where machine has to learn to handle both input and output in a multilingual fashion. Code-switching occurs when a speaker alternates between two or more languages, nowadays people communicates in code-switching languages in everyday life, hence spoken language technologies such as TTS must be developed to handle multilingual input and output.
 
-See [report.pdf](report.pdf) for more detail of this work.
+In this work, we present Code-Switching Tacotron, which is built based on the state-of-the-art end-to-end text-to-speech generative model Tacotron (Wang et al., 2017). CS-Tacotron is capable of synthesizing code-switching speech conditioned on raw CS text. Given CS text and audio pairs, our model can be trained end-to-end with proper data pre-processing. Furthurmore, we train our model on the LectureDSP dataset, a Chinese-English code-switching lecture-based dataset, which originates from the course Digital Signal Processing (DSP) offered in National Taiwan University (NTU). We present several key implementation techniques to make the Tacotron model perform well on this challenging multilingual speech generation task. CS-Tacotron possess the capability of generating CS speech from CS text, and speaks vividly with the style of LectureDSP’s speaker.
+
+See **[report.pdf](report.pdf)** for more detail of this work.
 
 Pull requests are welcome!
 
@@ -15,14 +17,16 @@ Pull requests are welcome!
 
 1. Install Python 3.
 
-2. Install the latest version of [Pytorch](https://pytorch.org/get-started/locally/) for your platform. For better
+2. Install the latest version of **[Pytorch](https://pytorch.org/get-started/locally/)** according to your platform. For better
 	performance, install with GPU support (CUDA) if viable. This code works with Pytorch 1.0 and later.
 
-3. Install [requirements](requirements.txt):
+3. (Optional) Install the latest version of [Tensorflow](https://www.tensorflow.org/) according to your platform. This can be optional, but for now required for speech processing.
+
+4. Install [requirements](requirements.txt):
 	```
 	pip3 install -r requirements.txt
 	```
-	*Note: you need to install torch and tensorflow / tensorflow-gpu depending on your platform. Here we list the Pytorch and tensorflow version that we use when we built this project.*
+	*Warning: you need to install torch and tensorflow / tensorflow-gpu depending on your platform. Here we list the Pytorch and tensorflow version that we use when we built this project.*
 
 
 ### Using a pre-trained model
@@ -87,7 +91,7 @@ Pull requests are welcome!
 
 6. **Monitor with TensorboardX** (optional)
 	```
-	tensorboardX --logdir 'path to log'
+	tensorboard --logdir 'path to log dir'
 	```
 
 	The trainer dumps audio and alignments every 2000 steps by default. You can find these in `CS-tacotron/ckpt`.
@@ -98,4 +102,4 @@ We would like to give credit to the [work](https://github.com/r9y9/tacotron_pyto
 
 ## Alignment
 We show the alignment plot of our model’s testing phase, where the first shows the alignment of monolingual Chinese input, the second is Chinese-English code-switching input, and the third is monolingual English input, respectively.
-![](https://github.com/andi611/CS-Tacotron/blob/master/image/alignment_2.png)
+<img src="https://github.com/andi611/CS-Tacotron/blob/master/image/alignment_2.png" width="645" height="775">
