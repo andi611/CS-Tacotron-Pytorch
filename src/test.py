@@ -18,7 +18,6 @@ import librosa
 import librosa.display
 import numpy as np
 from tqdm import tqdm
-from docopt import docopt
 from pypinyin import Style, pinyin
 #--------------------------------#
 import torch

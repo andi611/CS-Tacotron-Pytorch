@@ -26,7 +26,6 @@
 import os
 import sys
 import time
-from docopt import docopt
 #-----------------------#
 import numpy as np
 import librosa.display

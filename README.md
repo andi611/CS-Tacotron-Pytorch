@@ -19,10 +19,11 @@ Pull requests are welcome!
 2. Install the latest version of [Pytorch](https://pytorch.org/get-started/locally/) for your platform. For better
 	performance, install with GPU support (CUDA) if viable. This code works with Pytorch 1.0 and later.
 
-3. Install requirements:
+3. Install [requirements](requirements.txt):
 	```
 	pip3 install -r requirements.txt
 	```
+*Note: you need to install torch and tensorflow / tensorflow-gpu depending on your platform. Here we list the Pytorch and tensorflow version that we use when we built this project.*
 
 
 ### Using a pre-trained model
