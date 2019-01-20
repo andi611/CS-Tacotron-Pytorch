@@ -24,16 +24,16 @@ Audio samples of CS-Tacotron. All of the below phrases are unseen during trainin
 * <audio src="result/ch5.wav" controls preload></audio> - "吃什麼好呢"
 
 ### CS-Tacotron works well on **out-of-domain mixlingual Chinese-English** inputs. 
-* <audio src="result/mix1.wav" controls preload></audio> - "每天都要Happy"
-* <audio src="result/mix2.wav" controls preload></audio> - "這是語音處理processing"
-* <audio src="result/mix3.wav" controls preload></audio> - "你可以多使用Google"
-* <audio src="result/mix4.wav" controls preload></audio> - "New year新氣象"
-* <audio src="result/mix5.wav" controls preload></audio> - "這是個好problem"
+* <audio src="result/mix1.wav" controls preload></audio> - "每天都要 HAPPY"
+* <audio src="result/mix2.wav" controls preload></audio> - "這是語音處理 PROCESSING"
+* <audio src="result/mix3.wav" controls preload></audio> - "你可以多使用 GOOGLE"
+* <audio src="result/mix4.wav" controls preload></audio> - "NEW YEAR 新氣象"
+* <audio src="result/mix5.wav" controls preload></audio> - "這是個好 PROBLEM"
 
 ### CS-Tacotron can also adpat to some **out-of-domain monolingual English** inputs,
 * despite the fact that none of the training data contains full English sentence. 
-* <audio src="result/en1.wav" controls preload></audio> - "China number one"
-* <audio src="result/en2.wav" controls preload></audio> - "You find some problem"
+* <audio src="result/en1.wav" controls preload></audio> - "TAIWAN NUMBER ONE"
+* <audio src="result/en2.wav" controls preload></audio> - "YOU HAVE SOME PROBLEM"
 
 ## Quick Start
 
