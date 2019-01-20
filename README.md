@@ -11,15 +11,27 @@ See **[report.pdf](report.pdf)** for more detail of this work.
 Pull requests are welcome!
 
 ## Demo
-Audio samples of CS-Tacotron. All of the below phrases are unseen by Tacotron during training. 
+Audio samples of CS-Tacotron. All of the below phrases are unseen during training. 
+*Note: the audio demo bars will only display on our Github page, please visit: https://andi611.github.io/CS-Tacotron/*
 
-### CS-Tacotron works well on monolingual Chinese words. 
-* <audio src="result/ch1.wav" controls preload></audio>
-* <audio src="result/ch2.wav" controls preload></audio>
-* <audio src="result/ch3.wav" controls preload></audio>
-* <audio src="result/ch4.wav" controls preload></audio>
-* <audio src="result/ch5.wav" controls preload></audio>
+### CS-Tacotron works well on monolingual Chinese inputs. 
+* <audio src="result/ch1.wav" controls preload></audio> - "這是數位語音處理"
+* <audio src="result/ch2.wav" controls preload></audio> - "今天天氣很好"
+* <audio src="result/ch3.wav" controls preload></audio> - "歡迎來到台灣大學"
+* <audio src="result/ch4.wav" controls preload></audio> - "歡迎來到語音處理實驗室"
+* <audio src="result/ch5.wav" controls preload></audio> - "吃什麼好呢"
 
+### CS-Tacotron works well on **out-of-domain mixlingual Chinese-English** inputs. 
+* <audio src="result/mix1.wav" controls preload></audio> - "每天都要Happy"
+* <audio src="result/mix2.wav" controls preload></audio> - "這是語音處理processing"
+* <audio src="result/mix3.wav" controls preload></audio> - "你可以多使用Google"
+* <audio src="result/mix4.wav" controls preload></audio> - "New year新氣象"
+* <audio src="result/mix5.wav" controls preload></audio> - "這是個好problem"
+
+### CS-Tacotron can also adpat to some **out-of-domain monolingual English** inputs,
+* despite the fact that none of the training data contains full English sentence. 
+* <audio src="result/en1.wav" controls preload></audio> - "China number one"
+* <audio src="result/en2.wav" controls preload></audio> - "You find some problem"
 
 ## Quick Start
 
