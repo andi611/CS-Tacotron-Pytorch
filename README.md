@@ -32,11 +32,11 @@ Pull requests are welcome!
 ### Using a pre-trained model
 * **Run the testing environment with interactive mode**:
 	```
-	python3 test.py --interactive True --ckpt_dir ../ckpt --model 123000
+	python3 test.py --interactive True --model 480000
 	```
 * **Run the testing algorithm on a set of transcripts**:
 	```
-	python3 test.py --interactive False --ckpt_dir ../ckpt --model 123000 --test_file_path ../data/text/test.txt
+	python3 test.py --interactive False --model 480000 --test_file_path ../data/text/test.txt
 	```
 
 

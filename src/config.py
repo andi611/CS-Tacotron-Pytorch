@@ -136,7 +136,7 @@ def get_test_args():
 	path_parser.add_argument('--result_dir', type=str, default='../result/', help='path to output test results')
 	path_parser.add_argument('--ckpt_dir', type=str, default='../ckpt/', help='path to the directory where model checkpoints are saved')
 	path_parser.add_argument('--checkpoint_name', type=str, default='checkpoint_step', help='model name prefix for checkpoint files')
-	path_parser.add_argument('--model', type=str, default='276000', help='model step name for checkpoint files')
+	path_parser.add_argument('--model', type=str, default='480000', help='model step name for checkpoint files')
 	path_parser.add_argument('--test_file_path', type=str, default=None, help='path to the input test transcripts')
 	
 	args = parser.parse_args()
