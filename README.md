@@ -10,6 +10,16 @@ See **[report.pdf](report.pdf)** for more detail of this work.
 
 Pull requests are welcome!
 
+## Demo
+Audio samples of CS-Tacotron. All of the below phrases are unseen by Tacotron during training. 
+
+### CS-Tacotron works well on monolingual Chinese words. 
+* <audio src="result/ch1.wav" controls preload></audio>
+* <audio src="result/ch2.wav" controls preload></audio>
+* <audio src="result/ch3.wav" controls preload></audio>
+* <audio src="result/ch4.wav" controls preload></audio>
+* <audio src="result/ch5.wav" controls preload></audio>
+
 
 ## Quick Start
 
