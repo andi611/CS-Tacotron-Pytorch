@@ -12,7 +12,9 @@ Pull requests are welcome!
 
 ## Demo
 Audio samples of CS-Tacotron. All of the below phrases are unseen during training. 
-*Note: the audio demo bars will only display on our Github page, please visit: https://andi611.github.io/CS-Tacotron/*
+
+### If you are reading this on Github, **please visit our [Github page](https://andi611.github.io/CS-Tacotron/) for the audio bars to display properly.**
+* Audio files and their corresponding < spectrogram / alignment plots > can also be found in [result/](result/).
 
 ### CS-Tacotron works well on monolingual Chinese inputs. 
 * <audio src="result/ch1.wav" controls preload></audio> - "這是數位語音處理"
