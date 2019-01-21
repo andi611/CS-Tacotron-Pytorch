@@ -201,10 +201,12 @@ def main():
 	
 	#---preprocess text---#
 	if args.mode == 'all' or args.mode == 'text':
-		mapper = data.get_mapper(os.path.join(args.text_dir, args.mapper_path))
-		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_train_path), output_path=os.path.join(args.text_dir, args.text_output_train_path))
-		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_dev_path), output_path=os.path.join(args.text_dir, args.text_output_dev_path))
-		process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_test_path), output_path=os.path.join(args.text_dir, args.text_output_test_path))
+		try:
+			mapper = data.get_mapper(os.path.join(args.text_dir, args.mapper_path))
+			process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_train_path), output_path=os.path.join(args.text_dir, args.text_output_train_path))
+			process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_dev_path), output_path=os.path.join(args.text_dir, args.text_output_dev_path))
+			process_text(mapper, input_path=os.path.join(args.text_dir, args.text_input_test_path), output_path=os.path.join(args.text_dir, args.text_output_test_path))
+		except: pass
 		process_pinyin(args.text_pinyin_path, 
 					   args.text_input_raw_path, 
 					   args.text_dir, 
