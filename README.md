@@ -79,6 +79,7 @@ Audio samples of CS-Tacotron. All of the below phrases are unseen during trainin
 	 |- data
 		 |- text
 		 	|- train_sample.txt
+		 	|- test_sample.txt
 		 |- audio
 		 	|- sample 
 		 		|- audio_sample_*.wav
@@ -95,14 +96,14 @@ Audio samples of CS-Tacotron. All of the below phrases are unseen during trainin
 
 4. **Preprocess the audio data using [src/preprocess.py](src/preprocess.py):**
 	```
-	python3 preprocess.py --mode audio --audio_input_dir ../data/audio/sample/
+	python3 preprocess.py --mode audio --audio_input_dir ../data/audio/sample/ --audio_output_dir ../data/audio/sample_processed/ --visualization_dir ../data/audio/sample_visualization/
 	```
 	[Visualization](https://i.imgur.com/aqqJwtB.jpg) of the audio preprocess differences:
 	![](https://i.imgur.com/aqqJwtB.jpg)
 
 5. **Make model-ready meta files from text and audio using [src/preprocess.py](src/preprocess.py):**
 	```
-	python3 preprocess.py --mode meta --text_pinyin_path ../data/text/train_sample_pinyin.txt --audio_output_dir ../data/audio/sample_processed/ --visualization_dir ../data/audio/sample_visualization/
+	python3 preprocess.py --mode meta --text_pinyin_path ../data/text/train_sample_pinyin.txt --audio_output_dir ../data/audio/sample_processed/
 	```
 
 5. **Train a model using [src/train.py](src/train.py)**

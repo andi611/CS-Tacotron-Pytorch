@@ -72,7 +72,7 @@ config = configurations()
 def get_training_args():
 	parser = argparse.ArgumentParser(description='training arguments')
 
-	parser.add_argument('--checkpoint_dir', type=str, default='../ckpt', help='Directory where to save model checkpoints')
+	parser.add_argument('--checkpoint_dir', type=str, default='../ckpt_train', help='Directory where to save model checkpoints')
 	parser.add_argument('--checkpoint_path', type=str, default=None, help='Restore model from checkpoint path if given')
 	parser.add_argument('--data_root', type=str, default='../data/meta', help='Directory contains preprocessed features')
 	parser.add_argument('--meta_text', type=str, default='meta_text.txt', help='Model-ready training transcripts')
