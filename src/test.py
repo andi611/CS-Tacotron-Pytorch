@@ -45,8 +45,7 @@ def tts(model, text):
 	"""
 	if USE_CUDA:
 		model = model.cuda()
-	# TODO: Turning off dropout of decoder's prenet causes serious performance
-	# regression, not sure why.
+	# TODO: Turning off dropout of decoder's prenet causes serious performance regression, not sure why.
 	# model.decoder.eval()
 	model.encoder.eval()
 	model.postnet.eval()
@@ -87,12 +86,6 @@ def ch2pinyin(txt_ch):
 	return ' '.join([x[0] for x in ans if x[0] != 'EMPH_A'])
 
 
-def synthesis(checkpoint_path, text_list_file_path, dst_dir):
-
-
-
-
-
 ########
 # MAIN #
 ########
@@ -111,7 +104,6 @@ def main():
 
 	#---handle path---#
 	checkpoint_path = args.ckpt_dir + args.checkpoint_name + args.model + '.pth'
-	output_name = args.result_dir + args.model
 	os.makedirs(args.result_dir, exist_ok=True)
 	
 	#---load and set model---#
@@ -121,8 +113,11 @@ def main():
 	
 	if args.long_input:
 		model.decoder.max_decoder_steps = 500 # Set large max_decoder steps to handle long sentence outputs
+	else:
+		model.decoder.max_decoder_steps = 50
 		
-	if args.interactive:
+	if args.interactive == True:
+		output_name = args.result_dir + args.model
 
 		#---testing loop---#
 		while True:
@@ -135,7 +130,10 @@ def main():
 				print()
 				print('Terminating!')
 				break
-	else:
+
+	elif args.interactive == False:
+		output_name = args.result_dir + args.model + '/'
+		os.makedirs(output_name, exist_ok=True)
 
 		#---testing flow---#
 		with open(args.test_file_path, 'r', encoding='utf-8') as f:
@@ -144,14 +142,13 @@ def main():
 			for idx, line in enumerate(lines):
 				text = ch2pinyin(line)
 				print("{}: {} - {} ({} words, {} chars)".format(idx, line, text, len(line), len(text)))
-				waveform, alignment, _ = tts(model, text)
-				dst_wav_path = os.path.join(output_name, "{}.wav".format(idx))
-				dst_alignment_path = os.path.join(output_name, "{}_alignment.png".format(idx))
-				plot_alignment(alignment.T, dst_alignment_path, info="tacotron, {}".format(checkpoint_path))
-				audio.save_wav(waveform, dst_wav_path)
+				synthesis_speech(model, text=text, figures=args.plot, path=output_name+line)
 
 		print("Finished! Check out {} for generated audio samples.".format(output_name))
 	
+	else:
+		raise RuntimeError('Invalid mode!!!')
+		
 	sys.exit(0)
 
 if __name__ == "__main__":

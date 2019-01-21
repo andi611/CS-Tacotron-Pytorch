@@ -70,7 +70,7 @@ config = configurations()
 # TRAINING CONFIGURATIONS #
 ###########################
 def get_training_args():
-	parser = argparse.ArgumentParser(description='arguments')
+	parser = argparse.ArgumentParser(description='training arguments')
 
 	parser.add_argument('--checkpoint_dir', type=str, default='../ckpt', help='Directory where to save model checkpoints')
 	parser.add_argument('--checkpoint_path', type=str, default=None, help='Restore model from checkpoint path if given')
@@ -86,7 +86,7 @@ def get_training_args():
 # PREPROCESS CONFIGURATIONS #
 #############################
 def get_preprocess_args():
-	parser = argparse.ArgumentParser(description='preprocess')
+	parser = argparse.ArgumentParser(description='preprocess arguments')
 
 	parser.add_argument('--mode', choices=['text', 'audio', 'meta', 'analysis', 'all'], default='all', help='what to preprocess')
 	parser.add_argument('--num_workers', type=int, default=cpu_count(), help='multi-thread processing')
@@ -126,18 +126,18 @@ def get_preprocess_args():
 # TEST CONFIGURATIONS #
 #######################
 def get_test_args():
-	parser = argparse.ArgumentParser(description='preprocess')
+	parser = argparse.ArgumentParser(description='testing arguments')
 
-	parser.add_argument('--plot', type=bool, default=True, help='whether to plot')
-	parser.add_argument('--long_input', type=bool, default=True, help='whether to set the model for long input')
-	parser.add_argument('--interactive', type=bool, default=True, help='whether to test in an interactive mode')
+	parser.add_argument('--plot', action='store_true', help='whether to plot')
+	parser.add_argument('--long_input', action='store_true', help='whether to set the model for long input')
+	parser.add_argument('--interactive', action='store_true', help='whether to test in an interactive mode')
 
 	path_parser = parser.add_argument_group('path')
 	path_parser.add_argument('--result_dir', type=str, default='../result/', help='path to output test results')
 	path_parser.add_argument('--ckpt_dir', type=str, default='../ckpt/', help='path to the directory where model checkpoints are saved')
 	path_parser.add_argument('--checkpoint_name', type=str, default='checkpoint_step', help='model name prefix for checkpoint files')
 	path_parser.add_argument('--model', type=str, default='480000', help='model step name for checkpoint files')
-	path_parser.add_argument('--test_file_path', type=str, default=None, help='path to the input test transcripts')
+	path_parser.add_argument('--test_file_path', type=str, default='../data/text/test_sample.txt', help='path to the input test transcripts')
 	
 	args = parser.parse_args()
 	return args
