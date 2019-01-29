@@ -13,7 +13,7 @@ Pull requests are welcome!
 ## Demo
 Audio samples of CS-Tacotron. All of the below phrases are unseen during training. 
 
-* If you are reading this on Github, **please visit our [Github page](https://andi611.github.io/CS-Tacotron/) for the audio bars to display properly.**
+* If you are reading this on Github, **please visit our [Github page](https://andi611.github.io/CS-Tacotron-Pytorch/) for the audio bars to display properly.**
 * Audio files and their corresponding < spectrogram / alignment plots > can also be found in [result/](result/).
 
 ### CS-Tacotron works well on monolingual Chinese inputs. 
