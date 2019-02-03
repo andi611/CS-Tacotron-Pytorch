@@ -103,7 +103,7 @@ def main():
 					 use_memory_mask=config.use_memory_mask)
 
 	#---handle path---#
-	checkpoint_path = args.ckpt_dir + args.checkpoint_name + args.model + '.pth'
+	checkpoint_path = os.path.join(args.ckpt_dir, args.checkpoint_name + args.model_name + '.pth')
 	os.makedirs(args.result_dir, exist_ok=True)
 	
 	#---load and set model---#
