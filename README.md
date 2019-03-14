@@ -1,5 +1,5 @@
 # CS-Tacotron
-A Pytorch implementation of CS-Tacotron, a code-switching speech synthesis end-to-end generative TTS model based on Tacotron.  
+A Pytorch implementation of CS-Tacotron, a code-switching speech synthesis end-to-end generative TTS model based on Tacotron. For a regular version of Tacotron, please see this [repo](https://github.com/andi611/TTS-Tacotron-Pytorch).
 
 ## Introduction
 With the wide success of recent machine learning Text-to-speech (TTS) models, promising results on synthesizing realistic speech have proven machine’s capability of synthesizing human-like voices. However, little progress has been made in the domain of Chinese-English code-switching text-to-speech synthesis, where machine has to learn to handle both input and output in a multilingual fashion. Code-switching occurs when a speaker alternates between two or more languages, nowadays people communicates in code-switching languages in everyday life, hence spoken language technologies such as TTS must be developed to handle multilingual input and output.
